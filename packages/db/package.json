@@ -1,0 +1,15 @@
+{
+  "name": "db",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "license": "MIT",
+  "dependencies": {
+    "@prisma/client": "5.15.0",
+    "prisma": "5.15.0",
+    "typescript": "^5.9.3"
+  },
+  "devDependencies": {
+    "dotenv": "^17.2.3"
+  }
+}
