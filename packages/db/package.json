@@ -4,6 +4,9 @@
   "main": "index.js",
   "type": "module",
   "license": "MIT",
+  "exports": {
+    "db": "./index.ts"
+  },
   "dependencies": {
     "@prisma/client": "5.15.0",
     "prisma": "5.15.0",
