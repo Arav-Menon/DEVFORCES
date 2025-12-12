@@ -1,9 +1,35 @@
 import express from "express";
+import type { Request, Response } from "express";
+import { db } from "@repo/db/db";
+import { userSchema } from "@repo/common/validation";
+import bcrypt from "bcrypt";
+import { auth } from "../middleware/auth";
 
 export const updateUserRoute = express.Router();
 
-updateUserRoute.post("/update", (_, res) => {
-  res.json({
-    message: "hitting to user update route",
-  });
-});
+updateUserRoute.put(
+  "/profile/update/:userId",
+  auth,
+  async (req: Request, res: Response) => {
+    try {
+      const userId = req.id;
+      const parsed = userSchema.safeParse(req.body);
+      if (!parsed.success)
+        return res.status(400).json({ error: parsed.error.issues });
+
+      if (parsed.data.password) {
+        parsed.data.password = await bcrypt.hash(parsed.data.password, 10);
+      }
+
+      const updatedUser = await db.user.update({
+        where: { id: userId },
+        data: parsed.data,
+        select: { username: true, email: true, password: true },
+      });
+
+      return res.status(200).json({ message: "User updated", updatedUser });
+    } catch (error) {
+      return res.status(500).json({ error });
+    }
+  }
+);
