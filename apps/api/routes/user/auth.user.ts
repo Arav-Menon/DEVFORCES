@@ -16,20 +16,47 @@ authRoute.post("/auth", async (req, res) => {
     });
   }
 
-  const { username, email, password } = result.data;
+  try {
+    const { username, email, password } = result.data;
 
-  const existUser = db.user.findMany({
-    where: {
-      email,
-    },
-  });
+    const existUser = await db.user.findFirst({
+      where: {
+        email: email,
+      },
+    });
 
-  const hashPassword = await bcrypt.hash(password, 10);
-  if (!existUser) {
+    if (existUser) {
+      const comparePassword = await bcrypt.compare(
+        password,
+        existUser.password
+      );
+
+      if (!comparePassword)
+        return res.status(401).json({
+          message: "Wrong password",
+        });
+
+      const token = jwt.sign(
+        {
+          id: existUser.id,
+        },
+        process.env.AUTH_TOKEN!
+      );
+
+      res.status(200).json({
+        token,
+        user: {
+          username,
+          email,
+        },
+      });
+    }
+    const hashPassword = await bcrypt.hash(password, 10);
+
     const addUser = await db.user.create({
       data: {
-        username,
-        passowrd: hashPassword,
+        username: username ?? "",
+        password: hashPassword,
         email,
         role: "USER",
       },
@@ -39,15 +66,20 @@ authRoute.post("/auth", async (req, res) => {
       {
         id: addUser.id,
       },
-      process.env.AUTH_SECRET_KEY!
+      "ssdsddsfsd"
     );
 
-    res.sendStatus(200).json({
+    res.status(200).json({
       token,
       user: {
         username,
         email,
       },
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      message: `Internal sever error ${err}`,
     });
   }
 });
