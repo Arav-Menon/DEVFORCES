@@ -10,11 +10,13 @@ export function auth(req: Request, res: Response, next: NextFunction) {
   }
 
   try {
-    const decoded = jwt.verify(token, "process.env.JWT_ROOM_TOKEN");
+    const decoded = jwt.verify(token, process.env.AUTH_TOKEN!) as {
+      id: string;
+      email: string;
+    };
 
     console.log(decoded);
 
-    //@ts-ignore
     req.id = decoded.id;
     next();
   } catch (err) {
