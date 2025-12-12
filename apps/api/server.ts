@@ -13,4 +13,6 @@ app.use("/v1/user/", deleteUserRoute);
 app.use("/v1/user/", updateUserRoute);
 app.use("/v1/user/", userRoute);
 
-app.listen(4000);
+app.listen(process.env.PORT, () => {
+  console.log(`Server is running at PORT ${process.env.PORT}`);
+});
