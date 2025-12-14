@@ -3,13 +3,13 @@ import type { Request, Response } from "express";
 import { db } from "@repo/db/db";
 import { userSchema } from "@repo/common/validation";
 import bcrypt from "bcrypt";
-import { auth } from "../middleware/auth";
+import { middleware } from "../middleware/auth";
 
 export const updateUserRoute = express.Router();
 
 updateUserRoute.put(
   "/profile/update/:userId",
-  auth,
+  middleware,
   async (req: Request, res: Response) => {
     try {
       const userId = req.id;
