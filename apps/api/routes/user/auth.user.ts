@@ -19,10 +19,8 @@ authRoute.post("/auth", async (req, res) => {
   try {
     const { username, email, password } = result.data;
 
-    const existUser = await db.user.findFirst({
-      where: {
-        email: email,
-      },
+    const existUser = await db.user.findUnique({
+      where: { email },
     });
 
     if (existUser) {
@@ -39,11 +37,13 @@ authRoute.post("/auth", async (req, res) => {
       const token = jwt.sign(
         {
           id: existUser.id,
+          role: existUser.role,
         },
-        process.env.AUTH_TOKEN!
+        process.env.AUTH_TOKEN!,
+        { expiresIn: "7d" }
       );
 
-      res.status(200).json({
+      return res.status(200).json({
         token,
         user: {
           username,
@@ -65,8 +65,9 @@ authRoute.post("/auth", async (req, res) => {
     const token = jwt.sign(
       {
         id: addUser.id,
+        role: addUser.role,
       },
-      "ssdsddsfsd"
+      process.env.AUTH_TOKEN!
     );
 
     res.status(200).json({
