@@ -1,26 +1,20 @@
-import type { Request, Response, NextFunction } from "express";
+import type { Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import "dotenv/config";
 
-export function auth(req: Request, res: Response, next: NextFunction) {
-  const token = req.headers["authorization"];
+export const middleware = (req: any, res: Response, next: NextFunction) => {
+  const authHeader = req.headers.authorization;
 
-  if (!token) {
-    return res.status(403).json({ message: "Unauthorized: Token missing" });
+  if (!authHeader) {
+    return res.status(401).json({ message: "Unauthenticated" });
   }
 
-  try {
-    const decoded = jwt.verify(token, process.env.AUTH_TOKEN!) as {
-      id: string;
-      email: string;
-    };
+  const token = authHeader.split(" ")[1];
 
-    console.log(decoded);
+  const decoded = jwt.verify(token, process.env.AUTH_TOKEN!) as any;
 
-    req.id = decoded.id;
-    next();
-  } catch (err) {
-    console.error("JWT verification failed:", err);
-    return res.status(403).json({ message: "Invalid token" });
-  }
-}
+  req.user = decoded;
+  req.id = decoded.id;
+
+  next();
+};
