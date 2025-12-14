@@ -10,9 +10,10 @@ generator client {
 model User {
   id          String        @id @default(uuid())
   username    String
-  email       String
+  email       String        @unique
   password    String
   role        Role          @default(USER)
+  contest     Contest[]
   leaderboard Leaderboard[]
   submission  Submission[]
 }
@@ -24,42 +25,32 @@ enum Role {
 }
 
 model Contest {
-  id                          String                    @id @default(uuid())
-  title                       String
-  startTime                   DateTime
-  contestToChallengeMapping   ContestToChallengeMapping @relation(fields: [contestToChallengeMappingId], references: [id])
-  contestToChallengeMappingId String
-  leaderboard                 Leaderboard[]
-}
-
-model ContestToChallengeMapping {
-  id          String       @id @default(uuid())
-  contestId   String
-  challengeId String
-  index       Int
-  submission  Submission[]
-  contest     Contest[]
+  id          String        @id @default(uuid())
+  title       String
+  startTime   DateTime
+  leaderboard Leaderboard[]
+  user        User?         @relation(fields: [userId], references: [id])
+  userId      String?
   challenge   Challenge[]
 
-  @@unique([contestId, challengeId])
+  @@unique([title])
 }
 
 model Challenge {
-  id                          String                    @id @default(uuid())
-  title                       String
-  notionDocId                 String
-  maxPoints                   Int
-  contestToChallengeMapping   ContestToChallengeMapping @relation(fields: [contestToChallengeMappingId], references: [id])
-  contestToChallengeMappingId String
+  id          String   @id @default(uuid())
+  title       String   @unique
+  notionDocId String
+  maxPoints   Int
+  contest     Contest? @relation(fields: [contestId], references: [id])
+  contestId   String?
 }
 
 model Submission {
-  id                          String                    @id @default(uuid())
+  id                          String   @id @default(uuid())
   points                      Int
-  submittedAt                 DateTime                  @default(now())
-  contestToChallengeMapping   ContestToChallengeMapping @relation(fields: [contestToChallengeMappingId], references: [id])
+  submittedAt                 DateTime @default(now())
   contestToChallengeMappingId String
-  user                        User                      @relation(fields: [userId], references: [id])
+  user                        User     @relation(fields: [userId], references: [id])
   userId                      String
 }
 
@@ -72,8 +63,4 @@ model Leaderboard {
   contestId String
 
   @@unique([rank, contestId])
-}
-
-model AISE {
-  id String @id @default(uuid())
 }
