@@ -45,5 +45,9 @@ export const challengeSchema = z.object({
         message: "Invalid Notion document link",
       }
     ),
+
   maxPoint: z.number().min(10).max(100),
+  startAt: z.coerce.date().refine((d) => d.getTime() > Date.now(), {
+    message: "Start time must be in the future",
+  }),
 });
