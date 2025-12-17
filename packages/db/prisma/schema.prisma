@@ -24,6 +24,7 @@ enum Role {
   CREATOR
 }
 
+// contest where user can participate
 model Contest {
   id          String        @id @default(uuid())
   title       String
@@ -40,6 +41,7 @@ model Challenge {
   id          String   @id @default(uuid())
   title       String   @unique
   notionDocId String
+  startAt     DateTime
   maxPoints   Int
   contest     Contest? @relation(fields: [contestId], references: [id])
   contestId   String?
