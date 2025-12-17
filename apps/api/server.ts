@@ -4,13 +4,15 @@ import { authRoute } from "./routes/user/auth.user";
 import { deleteUserRoute } from "./routes/user/delete.user";
 import { updateUserRoute } from "./routes/user/update.user";
 import { userRoute } from "./routes/user/user";
-import { contestRouter } from "./routes/contest/contests";
-import { updateContestRouter } from "./routes/contest/update.contests";
-import { deleteContestRouter } from "./routes/contest/delete.contest";
-import { challengeRouter } from "./routes/challenge/challenge";
-import { deleteChallengeRouter } from "./routes/challenge/delete.challenge";
-import { updateChallengeRouter } from "./routes/challenge/update.challenge";
+import { contestRouter } from "./routes/lab/contest/contest";
+import { updateContestRouter } from "./routes/lab/contest/update.contests";
+import { deleteContestRouter } from "./routes/lab/contest/delete.contest";
+import { challengeRouter } from "./routes/lab/challenge/challenge";
+import { deleteChallengeRouter } from "./routes/lab/challenge/delete.challenge";
+import { updateChallengeRouter } from "./routes/lab/challenge/update.challenge";
 import { aiModelRouter } from "./routes/ai-model/model";
+import { contestsRouter } from "./routes/lab/contests";
+import { challengesRouter } from "./routes/lab/challenges";
 
 const app = express();
 app.use(express.json());
@@ -28,7 +30,10 @@ app.use("/api/v1/contest/", challengeRouter);
 app.use("/api/v1/contest/", updateChallengeRouter);
 app.use("/api/v1/contest/", deleteChallengeRouter);
 
-app.use("/api/v1/model/", aiModelRouter)
+app.use("/api/v1/model/", aiModelRouter);
+
+app.use("/api/v1/", contestsRouter);
+app.use("/api/v1/contest/", challengesRouter);
 
 app.listen(process.env.PORT, () => {
   console.log(`Server is running at PORT ${process.env.PORT}`);
