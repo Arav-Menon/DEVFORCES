@@ -23,29 +23,11 @@ export const contestSchema = z.object({
 
 export const challengeSchema = z.object({
   title: z.string().trim().min(5).max(100),
-  notionDocId: z
-    .string()
-    .url()
-    .refine(
-      (url) => {
-        try {
-          const parsed = new URL(url);
-          if (
-            parsed.hostname !== "notion.so" &&
-            parsed.hostname !== "www.notion.so"
-          ) {
-            return false;
-          }
-          return /[a-f0-9]{32}/i.test(parsed.pathname);
-        } catch {
-          return false;
-        }
-      },
-      {
-        message: "Invalid Notion document link",
-      }
-    ),
-
+  slug: z.string(),
+  description: z.string(),
+  requirements: z.string(),
+  constraints: z.string(),
+  example: z.string(),
   maxPoint: z.number().min(10).max(100),
   startAt: z.coerce.date().refine((d) => d.getTime() > Date.now(), {
     message: "Start time must be in the future",
