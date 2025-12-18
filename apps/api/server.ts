@@ -35,6 +35,8 @@ app.use("/api/v1/model/", aiModelRouter);
 app.use("/api/v1/", contestsRouter);
 app.use("/api/v1/contest/", challengesRouter);
 
+app.use("/api/v1/challenge/")
+
 app.listen(process.env.PORT, () => {
   console.log(`Server is running at PORT ${process.env.PORT}`);
 });
