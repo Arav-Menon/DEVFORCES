@@ -22,7 +22,16 @@ challengeRouter.post(
     }
 
     try {
-      const { title, startAt, notionDocId, maxPoint } = result.data;
+      const {
+        title,
+        slug,
+        description,
+        requirements,
+        constraints,
+        example,
+        startAt,
+        maxPoint,
+      } = result.data;
 
       const findChallenge = await db.challenge.findUnique({
         where: {
@@ -39,8 +48,12 @@ challengeRouter.post(
       const createChallenge = await db.challenge.create({
         data: {
           title: title,
-          notionDocId: notionDocId,
+          slug: slug,
           startAt: startAt,
+          description: description,
+          requirements: requirements,
+          constraints: constraints,
+          examples: example,
           maxPoints: maxPoint,
           contestId: contestId,
         },
@@ -50,8 +63,12 @@ challengeRouter.post(
         message: "challenge has been created",
         Challenge: {
           title: createChallenge.title,
+          slug: createChallenge.slug,
+          description: createChallenge.slug,
+          requirements: createChallenge.slug,
+          example: createChallenge.slug,
+          constraints: createChallenge.constraints,
           startAt: startAt,
-          notionDocId: createChallenge.notionDocId,
           maxPoint: createChallenge.maxPoints,
         },
       });
