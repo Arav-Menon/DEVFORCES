@@ -13,6 +13,7 @@ import { updateChallengeRouter } from "./routes/lab/challenge/update.challenge";
 import { aiModelRouter } from "./routes/ai-model/model";
 import { contestsRouter } from "./routes/lab/contests";
 import { challengesRouter } from "./routes/lab/challenges";
+import { submitRouter } from "./routes/lab/submit-challenge/submit";
 
 const app = express();
 app.use(express.json());
@@ -35,7 +36,7 @@ app.use("/api/v1/model/", aiModelRouter);
 app.use("/api/v1/", contestsRouter);
 app.use("/api/v1/contest/", challengesRouter);
 
-app.use("/api/v1/challenge/")
+app.use("/api/v1/challenge/", submitRouter);
 
 app.listen(process.env.PORT, () => {
   console.log(`Server is running at PORT ${process.env.PORT}`);
