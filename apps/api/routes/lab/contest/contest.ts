@@ -22,11 +22,11 @@ contestRouter.post(
     }
 
     try {
-      const { title, startTime } = result.data;
+      const { title, slug, startTime } = result.data;
 
       const findExistingContest = await db.contest.findUnique({
         where: {
-          title,
+          slug,
         },
       });
 
@@ -38,8 +38,10 @@ contestRouter.post(
       const createContest = await db.contest.create({
         data: {
           title: title,
+          slug: slug,
           startTime: startTime,
-          userId: userId,
+          status: "UPCOMING",
+          createdById: userId!,
         },
       });
 
