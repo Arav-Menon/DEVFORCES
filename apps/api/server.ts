@@ -10,7 +10,7 @@ import { deleteContestRouter } from "./routes/lab/contest/delete.contest";
 import { challengeRouter } from "./routes/lab/challenge/challenge";
 import { deleteChallengeRouter } from "./routes/lab/challenge/delete.challenge";
 import { updateChallengeRouter } from "./routes/lab/challenge/update.challenge";
-import { aiModelRouter } from "./routes/ai-model/model";
+import { aiModelRouter } from "./routes/model/model";
 import { contestsRouter } from "./routes/lab/contests";
 import { challengesRouter } from "./routes/lab/challenges";
 import { submitRouter } from "./routes/lab/submit-challenge/submit";
