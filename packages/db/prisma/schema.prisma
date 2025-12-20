@@ -28,38 +28,44 @@ enum Role {
 model Contest {
   id          String        @id @default(uuid())
   title       String
+  slug        String        @unique
   startTime   DateTime
+  status      ContestStatus @default(UPCOMING)
+  createdById String
+  createdBy   User          @relation(fields: [createdById], references: [id])
+  challenges  Challenge[]
   leaderboard Leaderboard[]
-  user        User?         @relation(fields: [userId], references: [id])
-  userId      String?
-  challenge   Challenge[]
-
-  @@unique([title])
+  createdAt   DateTime      @default(now())
 }
 
 model Challenge {
-  id           String   @id @default(uuid())
-  slug         String   @unique
-  title        String   @unique
-  description  String
-  requirements String
-  constraints  String //not required
-  examples     String?
-  maxPoints    Int
-  startAt      DateTime
-  submission   Submission[]
-  contest      Contest? @relation(fields: [contestId], references: [id])
-  contestId    String?
+  id               String       @id @default(uuid())
+  slug             String       @unique
+  title            String
+  description      String // markdown
+  requirements     String // markdown
+  constraints      String?
+  examples         Json?
+  difficulty       Difficulty
+  maxPoints        Int
+  allowedLanguages String[]
+  evaluationConfig Json
+  startAt          DateTime
+  endAt            DateTime
+  contestId        String
+  contest          Contest      @relation(fields: [contestId], references: [id])
+  submissions      Submission[]
+  createdAt        DateTime     @default(now())
 }
 
 model Submission {
-  id                          String   @id @default(uuid())
-  points                      Int
-  submittedAt                 DateTime @default(now())
-  challenge                   Challenge  @relation( fields: [challengeId], references: [id])
-  challengeId                 String
-  user                        User     @relation(fields: [userId], references: [id])
-  userId                      String
+  id          String    @id @default(uuid())
+  points      Int
+  submittedAt DateTime  @default(now())
+  challenge   Challenge @relation(fields: [challengeId], references: [id])
+  challengeId String
+  user        User      @relation(fields: [userId], references: [id])
+  userId      String
 }
 
 model Leaderboard {
@@ -71,4 +77,16 @@ model Leaderboard {
   contestId String
 
   @@unique([rank, contestId])
+}
+
+enum ContestStatus {
+  UPCOMING
+  ONGOING
+  ENDED
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
 }
