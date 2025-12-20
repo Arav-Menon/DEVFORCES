@@ -30,12 +30,16 @@ challengeRouter.post(
         constraints,
         example,
         startAt,
+        endAt,
         maxPoint,
+        difficulty,
+        allowedLanguages,
+        evaluationConfig,
       } = result.data;
 
       const findChallenge = await db.challenge.findUnique({
         where: {
-          title,
+          slug,
         },
       });
 
@@ -50,12 +54,16 @@ challengeRouter.post(
           title: title,
           slug: slug,
           startAt: startAt,
+          endAt: endAt,
           description: description,
           requirements: requirements,
           constraints: constraints,
-          examples: example,
+          examples: example!,
+          allowedLanguages: allowedLanguages,
           maxPoints: maxPoint,
-          contestId: contestId,
+          contestId: contestId!,
+          difficulty: difficulty, // Provide a default or get from request
+          evaluationConfig: evaluationConfig!, // Provide a default or get from request
         },
       });
 
