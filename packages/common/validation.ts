@@ -19,6 +19,7 @@ export const contestSchema = z.object({
   startTime: z.coerce.date().refine((d) => d.getTime() > Date.now(), {
     message: "Start time must be in the future",
   }),
+  slug: z.string(),
 });
 
 export const challengeSchema = z.object({
@@ -27,9 +28,15 @@ export const challengeSchema = z.object({
   description: z.string(),
   requirements: z.string(),
   constraints: z.string(),
-  example: z.string(),
+  example: z.json(),
+  allowedLanguages : z.array(z.string()),
   maxPoint: z.number().min(10).max(100),
   startAt: z.coerce.date().refine((d) => d.getTime() > Date.now(), {
     message: "Start time must be in the future",
   }),
+  endAt: z.coerce.date().refine((d) => d.getTime() < Date.now(), {
+    message: "end time must be in the future",
+  }),
+  evaluationConfig: z.json(),
+  difficulty: z.enum(["EASY", "MEDIUM", "HARD"]),
 });
