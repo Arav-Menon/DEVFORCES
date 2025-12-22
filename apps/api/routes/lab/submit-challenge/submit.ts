@@ -18,4 +18,8 @@ submitRouter.post("/submit/:challengeId ", middleware, async (req, res) => {
   const submissionId = uuidV4();
   const challenge = await getChallengeById(challengeId);
   const systemPrompt = getSystemPrompt(challenge);
+
+  
+
+
 });
