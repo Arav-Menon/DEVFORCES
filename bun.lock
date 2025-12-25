@@ -119,6 +119,7 @@
     "packages/redis-stream": {
       "name": "@repo/redis-stream",
       "dependencies": {
+        "dotenv": "^17.2.3",
         "redis": "^5.10.0",
       },
       "devDependencies": {
