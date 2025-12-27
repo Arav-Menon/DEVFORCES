@@ -1,5 +1,7 @@
 import { createClient } from "redis";
 import "dotenv/config";
+import os from "os";
+import crypto from "crypto";
 
 export const client = await createClient()
   .on("error", (err) => console.log("Redis client error", err))
@@ -13,7 +15,6 @@ type SubmissionEvent = {
   language: string;
   systemPrompt: string;
 };
-
 export const pushSubmission = async ({
   submissionId,
   userId,
@@ -22,7 +23,7 @@ export const pushSubmission = async ({
   language,
   systemPrompt,
 }: SubmissionEvent) => {
-  await client.xAdd("submisson:stream", "*", {
+  await client.xAdd("submission:stream", "*", {
     submissionId,
     userId,
     challengeId,
@@ -31,3 +32,19 @@ export const pushSubmission = async ({
     systemPrompt,
   });
 };
+
+console.log(pushSubmission);
+
+export const pullSubmission = async (
+  group = "worker-group",
+  consumer = `worker-${os.hostname()}-${crypto.randomUUID()}`
+) => {
+  const result = await client.xReadGroup(
+    group,
+    consumer,
+    [{ key: "submission:stream", id: ">" }],
+    { COUNT: 1, BLOCK: 5000 }
+  );
+  return result;
+};
+console.log(pullSubmission);
