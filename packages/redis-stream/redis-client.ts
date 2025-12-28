@@ -29,7 +29,7 @@ export const pushSubmission = async ({
   language,
   systemPrompt,
 }: SubmissionEvent) => {
-  await client.xAdd("submission:stream", "*", {
+  const response = await client.xAdd("submission:stream", "*", {
     submissionId,
     userId,
     challengeId,
@@ -37,19 +37,20 @@ export const pushSubmission = async ({
     language,
     systemPrompt,
   });
+  return response;
 };
 
 export const pullSubmission = async (
   group = "worker-group",
   consumer = `worker-${os.hostname()}-${crypto.randomUUID()}`
 ) => {
-  const result = await client.xReadGroup(
+  const response = await client.xReadGroup(
     group,
     consumer,
     [{ key: "submission:stream", id: ">" }],
     { COUNT: 1, BLOCK: 5000 }
   );
-  return result;
+  return response;
 };
 
 export const publishEvaluationResult = async ({
@@ -57,9 +58,23 @@ export const publishEvaluationResult = async ({
   userId,
   challengeId,
 }: EvaluationResultEvent) => {
-  await client.xAdd("submisson:notification", "*", {
+  const response = await client.xAdd("submisson:notification", "*", {
     result,
     userId,
     challengeId,
   });
+  return response;
+};
+
+export const broadCastEvaluationResult = async (
+  group = "realtime-group",
+  consumer = `woker-${os.hostname()}-${crypto.randomUUID()}`
+) => {
+  const response = await client.xReadGroup(
+    group,
+    consumer,
+    [{ key: "submisson:notification", id: ">" }],
+    { COUNT: 1, BLOCK: 5000 }
+  );
+  return response;
 };
