@@ -15,6 +15,12 @@ type SubmissionEvent = {
   language: string;
   systemPrompt: string;
 };
+type EvaluationResultEvent = {
+  result: string;
+  userId: string;
+  challengeId: any;
+};
+
 export const pushSubmission = async ({
   submissionId,
   userId,
@@ -33,8 +39,6 @@ export const pushSubmission = async ({
   });
 };
 
-console.log(pushSubmission);
-
 export const pullSubmission = async (
   group = "worker-group",
   consumer = `worker-${os.hostname()}-${crypto.randomUUID()}`
@@ -47,4 +51,15 @@ export const pullSubmission = async (
   );
   return result;
 };
-console.log(pullSubmission);
+
+export const publishEvaluationResult = async ({
+  result,
+  userId,
+  challengeId,
+}: EvaluationResultEvent) => {
+  await client.xAdd("submisson:notification", "*", {
+    result,
+    userId,
+    challengeId,
+  });
+};
