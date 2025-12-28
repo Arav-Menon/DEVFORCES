@@ -1,10 +1,13 @@
 {
-  "name": "ai-evaluator",
+  "name": "@repo/ai-evaluator",
   "module": "index.ts",
   "type": "module",
   "private": true,
   "scripts": {
     "start": "bun evaluator.ts"
+  },
+  "exports": {
+    "./evaluator": "./evaluator.ts"
   },
   "devDependencies": {
     "@types/bun": "latest"
@@ -16,6 +19,7 @@
     "@types/express": "^5.0.6",
     "axios": "^1.13.2",
     "dotenv": "^17.2.3",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "@repo/redis-stream": "*"
   }
 }
