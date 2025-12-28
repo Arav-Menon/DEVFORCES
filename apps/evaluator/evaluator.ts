@@ -1,13 +1,45 @@
-import express from "express";
+import axios from "axios";
 import "dotenv/config";
-import { aiEvaluator } from "./routes/ai-evaluator";
+import { publishEvaluationResult } from "@repo/redis-stream/redis-client";
 
-const app = express();
+export const processWithAi = async ({
+  systemPrompt,
+  code,
+  challengeId,
+  userId,
+}: any) => {
+  console.log("request is reaching here");
+  try {
+    const response = await axios.post(
+      "https://openrouter.ai/api/v1/chat/completions",
+      {
+        model: "mistralai/devstral-2512:free",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: code },
+        ],
+      },
+      {
+        headers: {
+          Authorization: `Bearer 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`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const result = response.data.choices[0].message.content;
 
-app.use(express.json());
+    console.log(result);
 
-app.use("/api/v1/", aiEvaluator);
+    const payload = {
+      result,
+      userId,
+      challengeId,
+    };
 
-app.listen(process.env.PORT, () => {
-  console.log(`evaluator is started at ${process.env.PORT}`);
-});
+    const sendNotificationToQueue = await publishEvaluationResult(payload);
+
+    console.dir(sendNotificationToQueue, { depth: null });
+  } catch (err) {
+    console.log(err);
+  }
+};
