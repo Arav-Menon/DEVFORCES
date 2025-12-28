@@ -91,7 +91,6 @@
       "dependencies": {
         "@repo/ai-evaluator": "*",
         "@repo/redis-stream": "*",
-        "redis": "^5.10.0",
       },
       "devDependencies": {
         "@types/bun": "latest",
