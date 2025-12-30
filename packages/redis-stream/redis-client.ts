@@ -58,22 +58,24 @@ export const publishEvaluationResult = async ({
   userId,
   challengeId,
 }: EvaluationResultEvent) => {
-  const response = await client.xAdd("submisson:notification", "*", {
-    result,
+  const response = await client.xAdd("submission:notification", "*", {
+    result, 
     userId,
     challengeId,
   });
+
+  console.log(response);
   return response;
 };
 
 export const broadCastEvaluationResult = async (
   group = "realtime-group",
-  consumer = `woker-${os.hostname()}-${crypto.randomUUID()}`
+  consumer = `worker-${os.hostname()}-${crypto.randomUUID()}`
 ) => {
   const response = await client.xReadGroup(
     group,
     consumer,
-    [{ key: "submisson:notification", id: ">" }],
+    [{ key: "submission:notification", id: ">" }],
     { COUNT: 1, BLOCK: 5000 }
   );
   return response;
