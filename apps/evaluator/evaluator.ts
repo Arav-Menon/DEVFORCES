@@ -21,7 +21,7 @@ export const processWithAi = async ({
       },
       {
         headers: {
-          Authorization: `Bearer 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`,
+          Authorization: `Bearer  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`,
           "Content-Type": "application/json",
           "HTTP-Referer": "http://localhost:4000",
           "X-Title": "DevForces Evaluator",
