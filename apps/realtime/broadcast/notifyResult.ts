@@ -8,9 +8,10 @@ export class result {
 
   private async addBroadCastResult(socket: WebSocket) {
     try {
-      const evaluationsData = (await broadCastEvaluationResult()) as any;
-
-      console.log(evaluationsData, { depth: null });
+      while (socket.readyState === socket.OPEN) {
+        const evaluationsData = (await broadCastEvaluationResult()) as any;
+        console.dir(evaluationsData, { depth: null });
+      }
     } catch (err) {
       socket.send(
         JSON.stringify({
