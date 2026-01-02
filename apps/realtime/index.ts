@@ -6,6 +6,7 @@ const wss = new WebSocketServer({ port: 8080 });
 const evaluationNotify = new result();
 
 wss.on("connection", (socket) => {
+  console.log("connection has been made");
   try {
     evaluationNotify.broadCastResult(socket);
   } catch (err) {
