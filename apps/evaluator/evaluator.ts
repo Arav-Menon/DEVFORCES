@@ -21,7 +21,7 @@ export const processWithAi = async ({
       },
       {
         headers: {
-          Authorization: `Bearer  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`,
+          Authorization: `Bearer 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`,
           "Content-Type": "application/json",
           "HTTP-Referer": "http://localhost:4000",
           "X-Title": "DevForces Evaluator",
@@ -40,7 +40,7 @@ export const processWithAi = async ({
 
     const sendNotificationToQueue = await publishEvaluationResult(payload);
 
-    console.log(sendNotificationToQueue, { depth: null });
+    console.dir(sendNotificationToQueue, { depth: null });
   } catch (err) {
     console.log(err);
   }
