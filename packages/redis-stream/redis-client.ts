@@ -53,30 +53,15 @@ export const pullSubmission = async (
   return response;
 };
 
-export const publishEvaluationResult = async ({
+export const evaluationNotification = async ({
   result,
   userId,
   challengeId,
 }: EvaluationResultEvent) => {
-  const response = await client.xAdd("submission:notification", "*", {
-    result,
-    userId,
-    challengeId,
-  });
-
-  console.log(response);
-  return response;
-};
-
-export const broadCastEvaluationResult = async (
-  group = "realtime-group",
-  consumer = `ws-wdrwerwerwe`
-) => {
-  const response = await client.xReadGroup(
-    group,
-    consumer,
-    [{ key: "submission:notification", id: "0" }],
-    { COUNT: 1, BLOCK: 0 }
+  const response = await client.publish(
+    "submission:notification",
+    JSON.stringify({ result, userId, challengeId })
   );
+
   return response;
 };
