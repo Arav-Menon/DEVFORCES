@@ -1,6 +1,6 @@
 import axios from "axios";
 import "dotenv/config";
-import { publishEvaluationResult } from "@repo/redis-stream/redis-client";
+import { evaluationNotification } from "@repo/redis-stream/redis-client";
 
 export const processWithAi = async ({
   systemPrompt,
@@ -21,7 +21,7 @@ export const processWithAi = async ({
       },
       {
         headers: {
-          Authorization: `Bearer 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`,
+          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY!}`,
           "Content-Type": "application/json",
           "HTTP-Referer": "http://localhost:4000",
           "X-Title": "DevForces Evaluator",
@@ -38,7 +38,7 @@ export const processWithAi = async ({
       challengeId,
     };
 
-    const sendNotificationToQueue = await publishEvaluationResult(payload);
+    const sendNotificationToQueue = await evaluationNotification(payload);
 
     console.dir(sendNotificationToQueue, { depth: null });
   } catch (err) {
