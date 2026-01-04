@@ -3,6 +3,8 @@ import "dotenv/config";
 import os from "os";
 import crypto from "crypto";
 
+const WORKER_ID = `worker-${os.hostname()}-${crypto.randomUUID()}`;
+
 export const client = await createClient()
   .on("error", (err) => console.log("Redis client error", err))
   .connect();
@@ -42,7 +44,7 @@ export const pushSubmission = async ({
 
 export const pullSubmission = async (
   group = "worker-group",
-  consumer = `worker-${os.hostname()}-${crypto.randomUUID()}`
+  consumer = WORKER_ID
 ) => {
   const response = await client.xReadGroup(
     group,
@@ -64,4 +66,24 @@ export const evaluationNotification = async ({
   );
 
   return response;
+};
+
+export const ackSubmission = (messageId: string) => {
+  return client.xAck("submission:stream", "worker-group", messageId);
+};
+
+export const claimStuckMessage = async () => {
+  const pending = await client.xPending("submission:stream", "worker-group");
+
+  for (const msg of pending as any) {
+    if (msg.idle > 60_000) {
+      await client.xClaim(
+        "submission:stream",
+        "worker-group",
+        WORKER_ID,
+        60_000,
+        [msg.id]
+      );
+    }
+  }
 };
