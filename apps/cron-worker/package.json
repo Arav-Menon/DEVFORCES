@@ -1,0 +1,18 @@
+{
+  "name": "cron-worker",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start:cron-worker" : "bun reclaim.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "dependencies": {
+    "@repo/redis-stream": "*"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}
