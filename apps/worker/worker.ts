@@ -1,4 +1,4 @@
-import { pullSubmission } from "@repo/redis-stream/redis-client";
+import { ackSubmission, pullSubmission } from "@repo/redis-stream/redis-client";
 import { processWithAi } from "@repo/ai-evaluator/evaluator";
 
 while (true) {
@@ -16,10 +16,17 @@ while (true) {
 
   console.log("PROCESSING:", record.id);
 
-  await processWithAi({
-    systemPrompt,
-    code,
-    challengeId,
-    userId,
-  });
+  try {
+    await processWithAi({
+      systemPrompt,
+      code,
+      challengeId,
+      userId,
+    });
+
+    await ackSubmission(record.id);
+    console.log(`Acked`, record.id);
+  } catch (err) {
+    console.error("Failed", record.id, err);
+  }
 }
