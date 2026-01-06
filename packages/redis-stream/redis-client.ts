@@ -23,6 +23,16 @@ type EvaluationResultEvent = {
   challengeId: any;
 };
 
+type AddLeaderBoardEvent = {
+  contestId: string;
+  score: any;
+  userId: any;
+};
+type LeaderboardEvent = {
+  contestId: string;
+  userId: any;
+};
+
 export const pushSubmission = async ({
   submissionId,
   userId,
@@ -69,7 +79,7 @@ export const evaluationNotification = async ({
 };
 
 export const ackSubmission = (messageId: string) => {
-  return client.xAck("submission:stream", "worker-group", messageId);
+  client.xAck("submission:stream", "worker-group", messageId);
 };
 
 export const claimStuckMessage = async () => {
@@ -86,4 +96,42 @@ export const claimStuckMessage = async () => {
       );
     }
   }
+};
+
+export const addToLeaderBoard = async ({
+  contestId,
+  score,
+  userId,
+}: AddLeaderBoardEvent) => {
+  const reponse = await client.zAdd(`leaderboard:${contestId}`, score, userId);
+
+  return reponse;
+};
+
+export const getLeaderBoard = async (contestId: string) => {
+  const response = await client.zRange(`leaderboard:${contestId}`, 0, -1, {
+    REV: true,
+    //@ts-ignore
+    WITHSCORES: true,
+  });
+  return response;
+};
+
+export const getUserRank = async ({ contestId, userId }: LeaderboardEvent) => {
+  const rank = await client.zRevRank(`leaderboard:${contestId}`, userId);
+
+  if (rank !== null) {
+    rank + 1;
+  } else {
+    return null;
+  }
+};
+export const getUserScore = async ({ contestId, userId }: LeaderboardEvent) => {
+  const response = await client.zScore(`leaderboard:${contestId}`, userId);
+  return response;
+};
+
+export const resetLeaderboard = async (contestId: string) => {
+  const response = await client.del(`leaderboard:${contestId}`);
+  return response;
 };
