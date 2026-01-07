@@ -12,7 +12,7 @@ while (true) {
   const stream = submissions[0];
   const record = stream?.messages[0];
 
-  const { systemPrompt, code, challengeId, userId } = record.message;
+  const { systemPrompt, code, challengeId, userId, contestId } = record.message;
 
   console.log("PROCESSING:", record.id);
 
@@ -22,6 +22,7 @@ while (true) {
       code,
       challengeId,
       userId,
+      contestId,
     });
 
     await ackSubmission(record.id);
