@@ -78,8 +78,8 @@ export const evaluationNotification = async ({
   return response;
 };
 
-export const ackSubmission = (messageId: string) => {
-  client.xAck("submission:stream", "worker-group", messageId);
+export const ackSubmission = async (messageId: string) => {
+  await client.xAck("submission:stream", "worker-group", messageId);
 };
 
 export const claimStuckMessage = async () => {
