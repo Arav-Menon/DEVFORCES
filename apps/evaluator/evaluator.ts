@@ -30,7 +30,14 @@ export const processWithAi = async ({
     );
     const result = response.data.choices[0].message.content;
 
-    console.log(result);
+    const cleaned = result
+      .replace(/```json/g, "")
+      .replace(/```/g, "")
+      .trim();
+
+    const parsed = JSON.parse(cleaned);
+
+    const score = parsed.score;
 
     const payload = {
       result,
