@@ -1,12 +1,16 @@
 import axios from "axios";
 import "dotenv/config";
-import { evaluationNotification } from "@repo/redis-stream/redis-client";
+import {
+  evaluationNotification,
+  pushLeaderboardEvent,
+} from "@repo/redis-stream/redis-client";
 
 export const processWithAi = async ({
   systemPrompt,
   code,
   challengeId,
   userId,
+  contestId,
 }: any) => {
   console.log("request is reaching here");
   try {
@@ -45,9 +49,17 @@ export const processWithAi = async ({
       challengeId,
     };
 
-    const sendNotificationToQueue = await evaluationNotification(payload);
+    const leaderboardPayload = {
+      contestId,
+      score,
+      userId,
+    };
 
+    const sendNotificationToQueue = await evaluationNotification(payload);
+    const sendLeaderBoardToQueue =
+      await pushLeaderboardEvent(leaderboardPayload);
     console.dir(sendNotificationToQueue, { depth: null });
+    console.dir(sendLeaderBoardToQueue, { depth: null });
   } catch (err) {
     console.log(err);
   }
