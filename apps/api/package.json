@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "start:backend": "bun server.ts"
+    "start:backend": "bun bin.ts"
   },
   "devDependencies": {
     "@types/bun": "latest"
@@ -17,10 +17,12 @@
     "@repo/db": "*",
     "@repo/redis-stream": "*",
     "@types/bcrypt": "^6.0.0",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "axios": "^1.13.2",
     "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
