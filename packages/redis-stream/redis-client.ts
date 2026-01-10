@@ -98,6 +98,32 @@ export const claimStuckMessage = async () => {
   }
 };
 
+export const pushLeaderboardEvent = async ({
+  contestId,
+  userId,
+  score,
+}: AddLeaderBoardEvent) => {
+  const response = await client.xAdd("leaderboard:event", "*", {
+    contestId,
+    userId,
+    score,
+  });
+  return response;
+};
+
+export const pullLeaderboardEvent = async (
+  group = "leaderboard_worker-group",
+  consumer = WORKER_ID
+) => {
+  const response = await client.xReadGroup(
+    group,
+    consumer,
+    [{ key: "leaderboard:event", id: ">" }],
+    { COUNT: 1, BLOCK: 5000 }
+  );
+  return response;
+};
+
 export const addToLeaderBoard = async ({
   contestId,
   score,
@@ -133,31 +159,5 @@ export const getUserScore = async ({ contestId, userId }: LeaderboardEvent) => {
 
 export const resetLeaderboard = async (contestId: string) => {
   const response = await client.del(`leaderboard:${contestId}`);
-  return response;
-};
-
-export const pushLeaderboardEvent = async ({
-  contestId,
-  userId,
-  score,
-}: AddLeaderBoardEvent) => {
-  const response = await client.xAdd("leaderboard:event", "*", {
-    contestId,
-    userId,
-    score,
-  });
-  return response;
-};
-
-export const pullLeaderboardEvent = async (
-  group = "leaderboard_worker-group",
-  consumer = WORKER_ID
-) => {
-  const response = await client.xReadGroup(
-    group,
-    consumer,
-    [{ key: "leaderboard:event", id: ">" }],
-    { COUNT: 1, BLOCK: 5000 }
-  );
   return response;
 };
