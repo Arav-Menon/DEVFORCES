@@ -6,7 +6,7 @@
   "scripts": {
     "start": "bun server.ts && leaderboard.ts",
     "dev": "bun server.ts",
-    "start:leaderboard": "leaderboard.ts"
+    "start:leaderboard": "bun leaderboard.ts"
   },
   "devDependencies": {
     "@types/bun": "latest"
