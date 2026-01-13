@@ -3,12 +3,14 @@ import { challengeSchema } from "@repo/common/validation";
 import { db } from "@repo/db/db";
 import { middleware } from "../../middleware/auth";
 import { authorizeRole } from "../../middleware/authorizeRole";
+import { challengeLimiter } from "@repo/common/rateLimit";
 
 export const challengeRouter = express.Router();
 
 challengeRouter.post(
   "/:contestId/challenge",
   middleware,
+  challengeLimiter,
   authorizeRole(["ADMIN", "CREATOR"]),
   async (req, res) => {
     const contestId = req.params.contestId;
