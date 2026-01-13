@@ -4,8 +4,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "start": "bun server.ts && leaderboard.ts",
-    "dev": "bun server.ts",
+    "start": "bun bun.ts && leaderboard.ts",
+    "dev": "bun bin.ts",
     "start:leaderboard": "bun leaderboard.ts"
   },
   "devDependencies": {
@@ -18,6 +18,6 @@
     "@repo/redis-stream": "*",
     "@types/express": "^5.0.6",
     "dotenv": "^17.2.3",
-    "expres": "^0.0.5"
+    "express": "^5.2.1"
   }
 }
