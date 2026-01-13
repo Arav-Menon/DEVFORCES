@@ -1,5 +1,6 @@
 import express, { Router } from "express";
 import { userSchema } from "@repo/common/validation";
+import { authLimiter } from "@repo/common/authRateLimit";
 import { db } from "@repo/db/db";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -7,7 +8,7 @@ import "dotenv/config";
 
 export const authRoute: Router = express.Router();
 
-authRoute.post("/auth", async (req, res) => {
+authRoute.post("/auth", authLimiter, async (req, res) => {
   const result = userSchema.safeParse(req.body);
 
   if (!result.success) {
