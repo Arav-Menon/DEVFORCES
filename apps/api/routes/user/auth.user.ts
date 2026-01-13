@@ -1,6 +1,6 @@
 import express, { Router } from "express";
 import { userSchema } from "@repo/common/validation";
-import { authLimiter } from "@repo/common/authRateLimit";
+import { authLimiter } from "@repo/common/rateLimit";
 import { db } from "@repo/db/db";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
