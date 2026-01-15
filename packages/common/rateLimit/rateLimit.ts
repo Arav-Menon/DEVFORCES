@@ -16,7 +16,7 @@ export const authLimiter = rateLimit({
         "Too many auth requests attemps, please try again after 10 minutes"
       ),
   store: new RedisStore({
-    sendCommand: (...args: string[]) => client.call!(...args) as any,
+    sendCommand: (...args: string[]) => client.sendCommand(args) as any,
   }),
 });
 
@@ -31,7 +31,7 @@ export const submitLimiter = rateLimit({
       );
   },
   store: new RedisStore({
-    sendCommand: (...args: string[]) => client.call!(...args) as any,
+    sendCommand: (...args: string[]) => client.sendCommand(args) as any,
   }),
 });
 
@@ -46,7 +46,7 @@ export const challengeLimiter = rateLimit({
       );
   },
   store: new RedisStore({
-    sendCommand: (...args: string[]) => client.call!(...args) as any,
+    sendCommand: (...args: string[]) => client.sendCommand(args) as any,
   }),
 });
 
@@ -61,6 +61,6 @@ export const contestLimiter = rateLimit({
       );
   },
   store: new RedisStore({
-    sendCommand: (...args: string[]) => client.call!(...args) as any,
+    sendCommand: (...args: string[]) => client.sendCommand(args) as any,
   }),
 });
