@@ -4,17 +4,15 @@ import { getChallengeById } from "./fetchId";
 import { v4 as uuidV4 } from "uuid";
 import { middleware } from "../../middleware/auth";
 import { client, pushSubmission } from "@repo/redis-stream/redis-client";
-import { getContestById } from "./fetchId";
 import { submitLimiter } from "@repo/common/rateLimit";
 
 export const submitRouter = express.Router();
 
 submitRouter.post(
   "/submit/:contestId/:challengeId",
-  middleware,
-  submitLimiter,
+  middleware,submitLimiter,
   async (req, res) => {
-    const userId = req.id;
+    const userId = req.user?.id;
     const challengeId = req.params.challengeId;
     const contestId = req.params.contestId;
     const { code, language } = req.body;
@@ -27,7 +25,6 @@ submitRouter.post(
 
     const submissionId = uuidV4();
     const challenge = await getChallengeById(challengeId);
-    await getContestById(contestId);
     const systemPrompt = getSystemPrompt(challenge);
 
     const payload = {
