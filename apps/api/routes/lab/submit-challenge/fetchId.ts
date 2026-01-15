@@ -11,15 +11,3 @@ export const getChallengeById = async (challengeId: string) => {
 
   return getChallengeId;
 };
-
-export const getContestById = async (contestId: string) => {
-  const getContestId = await db.challenge.findUnique({
-    where: {
-      id: contestId,
-    },
-  });
-
-  if (!getContestId) return;
-
-  return getContestId;
-};
