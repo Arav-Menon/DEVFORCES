@@ -11,6 +11,7 @@ export const client = await createClient()
 
 type SubmissionEvent = {
   submissionId: string;
+  contestId: string;
   userId: string;
   challengeId: any;
   code: string;
@@ -25,8 +26,13 @@ type EvaluationResultEvent = {
 
 type AddLeaderBoardEvent = {
   contestId: string;
+  score: number;
+  userId: string;
+};
+type AddLeaderBoardToQueueEvent = {
+  contestId: string;
   score: any;
-  userId: any;
+  userId: string;
 };
 type LeaderboardEvent = {
   contestId: string;
@@ -35,6 +41,7 @@ type LeaderboardEvent = {
 
 export const pushSubmission = async ({
   submissionId,
+  contestId,
   userId,
   challengeId,
   code,
@@ -43,6 +50,7 @@ export const pushSubmission = async ({
 }: SubmissionEvent) => {
   const response = await client.xAdd("submission:stream", "*", {
     submissionId,
+    contestId,
     userId,
     challengeId,
     code,
@@ -102,11 +110,11 @@ export const pushLeaderboardEvent = async ({
   contestId,
   userId,
   score,
-}: AddLeaderBoardEvent) => {
+}: AddLeaderBoardToQueueEvent) => {
   const response = await client.xAdd("leaderboard:event", "*", {
-    contestId,
-    userId,
-    score,
+    contestId: String(contestId),
+    userId: String(userId),
+    score: String(score),
   });
   return response;
 };
@@ -129,7 +137,10 @@ export const addToLeaderBoard = async ({
   score,
   userId,
 }: AddLeaderBoardEvent) => {
-  const reponse = await client.zAdd(`leaderboard:${contestId}`, score, userId);
+  const reponse = await client.zAdd(`leaderboard:${contestId}`, {
+    score,
+    value: userId,
+  });
 
   return reponse;
 };
@@ -147,10 +158,9 @@ export const getUserRank = async ({ contestId, userId }: LeaderboardEvent) => {
   const rank = await client.zRevRank(`leaderboard:${contestId}`, userId);
 
   if (rank !== null) {
-    rank + 1;
-  } else {
-    return null;
+    return rank + 1;
   }
+  return null;
 };
 export const getUserScore = async ({ contestId, userId }: LeaderboardEvent) => {
   const response = await client.zScore(`leaderboard:${contestId}`, userId);
