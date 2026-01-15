@@ -13,8 +13,9 @@ export const middleware = (req: any, res: Response, next: NextFunction) => {
 
   const decoded = jwt.verify(token, process.env.AUTH_TOKEN!) as any;
 
-  req.user = decoded;
-  req.id = decoded.id;
+   req.user = {
+      id: decoded.id,
+    } as any
 
   next();
 };
