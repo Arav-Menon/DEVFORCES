@@ -12,7 +12,7 @@ while (true) {
   const stream = submissions[0];
   const record = stream?.messages[0];
 
-  const { systemPrompt, code, challengeId, userId, contestId } = record.message;
+  const { systemPrompt, code, contestId, challengeId, userId } = record.message;
 
   console.log("PROCESSING:", record.id);
 
