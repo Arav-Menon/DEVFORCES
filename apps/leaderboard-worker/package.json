@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "start": "bun bun.ts && leaderboard.ts",
+    "start": "bun bin.ts && leaderboard.ts",
     "dev": "bun bin.ts",
     "start:leaderboard": "bun leaderboard.ts"
   },
