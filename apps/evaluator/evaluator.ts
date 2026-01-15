@@ -34,6 +34,8 @@ export const processWithAi = async ({
     );
     const result = response.data.choices[0].message.content;
 
+    console.log(result);
+
     const cleaned = result
       .replace(/```json/g, "")
       .replace(/```/g, "")
@@ -41,7 +43,7 @@ export const processWithAi = async ({
 
     const parsed = JSON.parse(cleaned);
 
-    const score = parsed.score;
+    const score = Number(parsed.score);
 
     const payload = {
       result,
@@ -58,8 +60,8 @@ export const processWithAi = async ({
     const sendNotificationToQueue = await evaluationNotification(payload);
     const sendLeaderBoardToQueue =
       await pushLeaderboardEvent(leaderboardPayload);
-    console.dir(sendNotificationToQueue, { depth: null });
-    console.dir(sendLeaderBoardToQueue, { depth: null });
+    console.log(sendNotificationToQueue, { depth: null });
+    console.log(sendLeaderBoardToQueue, { depth: null });
   } catch (err) {
     console.log(err);
   }
