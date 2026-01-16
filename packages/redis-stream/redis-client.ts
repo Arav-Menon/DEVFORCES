@@ -1,9 +1,7 @@
 import { createClient } from "redis";
 import "dotenv/config";
-import os from "os";
-import crypto from "crypto";
 
-const WORKER_ID = `worker-${os.hostname()}-${crypto.randomUUID()}`;
+const WORKER_ID = `consumer-worker`;
 
 export const client = await createClient()
   .on("error", (err) => console.log("Redis client error", err))
@@ -91,7 +89,14 @@ export const ackSubmission = async (messageId: string) => {
 };
 
 export const claimStuckMessage = async () => {
-  const pending = await client.xPending("submission:stream", "worker-group");
+  const pending = await client.xPendingRange(
+    "submission:stream",
+    "worker-group",
+    "-",
+    "+",
+    10,
+    { IDLE: 60_000 }
+  );
 
   for (const msg of pending as any) {
     if (msg.idle > 60_000) {
@@ -100,7 +105,7 @@ export const claimStuckMessage = async () => {
         "worker-group",
         WORKER_ID,
         60_000,
-        [msg.id]
+        msg.id
       );
     }
   }
