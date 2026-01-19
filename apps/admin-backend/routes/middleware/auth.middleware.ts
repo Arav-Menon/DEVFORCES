@@ -11,7 +11,7 @@ export const middleware = (req: any, res: Response, next: NextFunction) => {
 
   const token = authHeader.split(" ")[1];
 
-  const decoded = jwt.verify(token, process.env.AUTH_TOKEN!) as any;
+  const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
 
   req.user = {
     id: decoded.id,
