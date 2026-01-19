@@ -2,10 +2,11 @@ import express from "express";
 import { db } from "@repo/db/db";
 import { middleware } from "../middleware/auth.middleware";
 import "dotenv/config";
+import { authorizeRole } from "../middleware/authorizeRole";
 
 export const Adminrouter = express();
 
-Adminrouter.get("/profile", middleware, async (req: any, res: any) => {
+Adminrouter.get("/profile", middleware, authorizeRole(["ADMIN"]) , async (req: any, res: any) => {
   try {
     const userId = req.user.id;
 
