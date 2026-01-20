@@ -27,7 +27,7 @@ authRoute.post("/auth", authLimiter, async (req, res) => {
     if (existUser) {
       const comparePassword = await bcrypt.compare(
         password,
-        existUser.password
+        existUser.password,
       );
 
       if (!comparePassword)
@@ -35,13 +35,17 @@ authRoute.post("/auth", authLimiter, async (req, res) => {
           message: "Wrong password",
         });
 
+      if (existUser.isBlocked === true) {
+        res.status(403).json(`${existUser.username} is blocked`);
+      }
+
       const token = jwt.sign(
         {
           id: existUser.id,
           role: existUser.role,
         },
         process.env.AUTH_TOKEN!,
-        { expiresIn: "7d" }
+        { expiresIn: "7d" },
       );
 
       return res.status(200).json({
@@ -68,7 +72,7 @@ authRoute.post("/auth", authLimiter, async (req, res) => {
         id: addUser.id,
         role: addUser.role,
       },
-      process.env.AUTH_TOKEN!
+      process.env.AUTH_TOKEN!,
     );
 
     res.status(200).json({
@@ -81,7 +85,7 @@ authRoute.post("/auth", authLimiter, async (req, res) => {
   } catch (err) {
     console.log(err);
     return res.status(500).json({
-      message: `Internal sever error ${err}`,
+      message: `Internal sever error`,
     });
   }
 });
