@@ -12,7 +12,5 @@ if (cluster.isPrimary) {
     cluster.fork();
   });
 } else {
-  app.listen(process.env.PORT, () => {
-    console.log(`Server is running at PORT ${process.env.PORT}`);
-  });
+  app.listen(process.env.PORT);
 }
