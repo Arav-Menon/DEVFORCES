@@ -1,7 +1,7 @@
 import express from "express";
 import type { Request, Response } from "express";
 import { db } from "@repo/db/db";
-import { middleware } from "../middleware/auth";
+import { middleware } from "../../middleware/auth";
 
 export const userRoute = express.Router();
 
