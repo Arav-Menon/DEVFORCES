@@ -3,7 +3,7 @@ import type { Request, Response } from "express";
 import { db } from "@repo/db/db";
 import { userSchema } from "@repo/common/validation";
 import bcrypt from "bcrypt";
-import { middleware } from "../middleware/auth";
+import { middleware } from "../../middleware/auth";
 
 export const updateUserRoute = express.Router();
 
