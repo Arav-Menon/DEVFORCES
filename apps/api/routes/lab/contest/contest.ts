@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import express from "express";
-import { middleware } from "../../middleware/auth";
-import { authorizeRole } from "../../middleware/authorizeRole";
+import { middleware } from "../../../middleware/auth";
+import { authorizeRole } from "../../../middleware/authorizeRole";
 import { contestSchema } from "@repo/common/validation";
 import { db } from "@repo/db/db";
 import { contestLimiter } from "@repo/common/rateLimit";
