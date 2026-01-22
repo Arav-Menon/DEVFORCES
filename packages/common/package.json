@@ -5,7 +5,8 @@
   "private": true,
   "exports": {
     "./validation": "./validation.ts",
-    "./rateLimit": "./rateLimit/rateLimit.ts"
+    "./rateLimit": "./rateLimit/rateLimit.ts",
+    "./index" : "./observability/index.ts"
   },
   "devDependencies": {
     "@types/bun": "latest"
@@ -14,9 +15,10 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@repo/redis-stream": "*",
     "express-rate-limit": "^8.2.1",
+    "prom-client": "^15.1.3",
     "rate-limit-redis": "^4.3.1",
-    "zod": "^4.1.13",
-    "@repo/redis-stream": "*"
+    "zod": "^4.1.13"
   }
 }
