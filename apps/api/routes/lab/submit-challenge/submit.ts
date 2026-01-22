@@ -2,7 +2,7 @@ import express from "express";
 import { getSystemPrompt } from "../../prompt";
 import { getChallengeById } from "./fetchId";
 import { v4 as uuidV4 } from "uuid";
-import { middleware } from "../../middleware/auth";
+import { middleware } from "../../../middleware/auth";
 import { client, pushSubmission } from "@repo/redis-stream/redis-client";
 import { submitLimiter } from "@repo/common/rateLimit";
 
