@@ -5,11 +5,14 @@ import { db } from "@repo/db/db";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import "dotenv/config";
-import { authMetricsMiddleware } from "../../middleware/metrics";
+import {
+  active_requests,
+  authMetricsMiddleware,
+} from "../../middleware/metrics";
 
 export const authRoute: Router = express.Router();
 
-authRoute.use(authMetricsMiddleware);
+authRoute.use(authMetricsMiddleware, active_requests);
 
 authRoute.post("/auth", authLimiter, async (req, res) => {
   const result = userSchema.safeParse(req.body);
