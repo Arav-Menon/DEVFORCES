@@ -46,10 +46,20 @@ app.use("/api/v1/challenge/", submitRouter);
 
 app.get("/metrics", async (req, res) => {
   try {
-    res.set("Content-Type", register.contentType);
     const metrics = await register.metrics();
+    res.set("Content-Type", register.contentType);
     res.end(metrics);
   } catch (err) {
     res.status(500).end(err);
   }
 });
+
+// app.get("/health", async (req, res) => {
+//   try {
+//     const metrics = await register.metrics();
+//     res.set("Content-Type", register.contentType);
+//     res.end(metrics);
+//   } catch (err) {
+//     res.status(500).end(err);
+//   }
+// });
