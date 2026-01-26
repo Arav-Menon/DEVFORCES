@@ -38,4 +38,6 @@ export const active_requests = (req: any, res: any, next: NextFunction) => {
     });
     primaryProcessUsage.dec();
   });
+  
+  next();
 };
