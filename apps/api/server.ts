@@ -15,6 +15,7 @@ import { contestsRouter } from "./routes/lab/contests";
 import { challengesRouter } from "./routes/lab/challenges";
 import { submitRouter } from "./routes/lab/submit-challenge/submit";
 import { register } from "@repo/common/observability";
+import { authMetricsMiddleware } from "./middleware/metrics";
 
 export const app = express();
 app.use(express.json());
