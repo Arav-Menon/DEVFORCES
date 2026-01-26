@@ -18,6 +18,7 @@ export const authMetricsMiddleware = (
       method: req.method,
       route: req.route ? req.route.path : req.path,
       statusCode: res.statusCode,
+      response_time: endTime - startTime,
     });
   });
   next();
@@ -38,6 +39,6 @@ export const active_requests = (req: any, res: any, next: NextFunction) => {
     });
     primaryProcessUsage.dec();
   });
-  
+
   next();
 };
