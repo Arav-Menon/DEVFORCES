@@ -7,7 +7,7 @@ export const register = client.register;
 export const authRequestCounter = new client.Counter({
   name: "auth_http_request_total",
   help: "Auth Api requests",
-  labelNames: ["method", "route", "statusCode"],
+  labelNames: ["method", "route", "statusCode", 'response_time'],
   registers: [register],
 });
 
