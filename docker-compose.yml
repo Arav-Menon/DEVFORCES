@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: devforces-postgres_db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - devforces-network
+
+  redis:
+    image: redis:latest
+    container_name: devforces-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - devforces-network
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfiles/Dockerfile.api
+    container_name: devforces-api
+    ports:
+      - "4000:4000"
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      PORT: 4000
+      AUTH_TOKEN: ${AUTH_TOKEN}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - devforces-network
+
+networks:
+  devforces-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
