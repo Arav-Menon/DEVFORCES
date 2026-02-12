@@ -183,3 +183,31 @@ export const resetLeaderboard = async (contestId: string) => {
   const response = await client.del(`leaderboard:${contestId}`);
   return response;
 };
+
+export const publishLeaderboardUpdate = async (
+  contestId: string,
+  leaderboard: any
+) => {
+  const channel = `leaderboard:updates:${contestId}`;
+  const message = JSON.stringify({
+    contestId,
+    leaderboard,
+    timestamp: Date.now(),
+  });
+  
+  try {
+    const numSubscribers = await client.publish(channel, message);
+    return numSubscribers;
+  } catch (error) {
+    console.error(`Failed to publish leaderboard update for contest ${contestId}:`, error);
+    throw error;
+  }
+};
+
+export const createLeaderboardSubscriber = async () => {
+  const subscriber = await createClient(redisConfig)
+    .on("error", (err) => console.log("Redis subscriber error", err))
+    .connect();
+  
+  return subscriber;
+};
