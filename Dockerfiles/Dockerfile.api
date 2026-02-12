@@ -19,6 +19,10 @@ COPY apps/api ./apps/api
 # Install all dependencies (this will resolve workspace dependencies)
 RUN bun install
 
+# Generate Prisma client
+WORKDIR /app/packages/db
+RUN bunx prisma generate
+
 # # Set environment variables for Docker networking
 # ENV REDIS_HOST=redis
 # ENV REDIS_PORT=6379
