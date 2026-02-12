@@ -1,4 +1,4 @@
-version: '3.8'
+
 
 services:
   postgres:
@@ -7,21 +7,23 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: devforces_code
+      POSTGRES_DB: postgres
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - devForce_data:/var/lib/postgresql/data
     networks:
-      - devforces-network
+      - devforce_network
 
   redis:
     image: redis:latest
     container_name: devforces-redis
     ports:
       - "6379:6379"
+    volumes:
+      - devForce_caching:/data
     networks:
-      - devforces-network
+      - devforce_network
 
   api:
     build:
@@ -31,21 +33,44 @@ services:
     ports:
       - "4000:4000"
     environment:
-      DATABASE_URL: ${DATABASE_URL}
+      # DATABASE_URL: ${DATABASE_URL}
       REDIS_HOST: redis
       REDIS_PORT: 6379
       PORT: 4000
-      AUTH_TOKEN: ${AUTH_TOKEN}
-      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+      # AUTH_TOKEN: ${AUTH_TOKEN}
+      # OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
     depends_on:
       - postgres
       - redis
     networks:
-      - devforces-network
+      - devforce_network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus_container
+    ports : 
+     - "9090:9090"    
+    volumes:
+     - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+     - devforce_network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana_container
+    ports: 
+     - "3005:3000"
+    volumes:
+     - grafana_data:/var/lib/grafana
+    networks:
+      - devforce_network
+
 
 networks:
-  devforces-network:
+  devforce_network:
     driver: bridge
 
 volumes:
-  postgres_data:
+  devForce_data:
+  devForce_caching:
+  grafana_data:
