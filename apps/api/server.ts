@@ -15,7 +15,6 @@ import { contestsRouter } from "./routes/lab/contests";
 import { challengesRouter } from "./routes/lab/challenges";
 import { submitRouter } from "./routes/lab/submit-challenge/submit";
 import { register } from "@repo/common/observability";
-import { authMetricsMiddleware } from "./middleware/metrics";
 
 export const app = express();
 app.use(express.json());
@@ -27,7 +26,7 @@ app.use(
   }),
 );
 
-app.use("/api/v1/user/", authRoute);
+app.use("/api/v1/user/", authRoute); 
 app.use("/api/v1/user/", userRoute);
 app.use("/api/v1/user/", updateUserRoute);
 app.use("/api/v1/user/", deleteUserRoute);
@@ -46,6 +45,7 @@ app.use("/api/v1/contest/", challengesRouter);
 app.use("/api/v1/challenge/", submitRouter);
 
 app.get("/metrics", async (req, res) => {
+  console.log("metrics hit")
   try {
     const metrics = await register.metrics();
     res.set("Content-Type", register.contentType);
