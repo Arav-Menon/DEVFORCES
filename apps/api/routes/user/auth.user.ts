@@ -6,13 +6,18 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import "dotenv/config";
 import {
-  active_requests,
-  authMetricsMiddleware,
+  auth_request_counter,
+  auth_active_requests_gauge,
+  auth_active_request_range,
 } from "../../middleware/metrics";
 
 export const authRoute: Router = express.Router();
 
-authRoute.use(authMetricsMiddleware, active_requests);
+authRoute.use(
+  auth_request_counter,
+  auth_active_requests_gauge,
+  auth_active_request_range,
+);
 
 authRoute.post("/auth", authLimiter, async (req, res) => {
   const result = userSchema.safeParse(req.body);
