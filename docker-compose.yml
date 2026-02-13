@@ -52,6 +52,8 @@ services:
      - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     networks:
      - devforce_network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   grafana:
     image: grafana/grafana:latest
@@ -70,5 +72,6 @@ networks:
 
 volumes:
   devForce_data:
+    external : true
   devForce_caching:
   grafana_data:
