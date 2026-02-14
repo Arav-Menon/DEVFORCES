@@ -26,7 +26,7 @@ app.use(
   }),
 );
 
-app.use("/api/v1/user/", authRoute); 
+app.use("/api/v1/user/", authRoute);
 app.use("/api/v1/user/", userRoute);
 app.use("/api/v1/user/", updateUserRoute);
 app.use("/api/v1/user/", deleteUserRoute);
