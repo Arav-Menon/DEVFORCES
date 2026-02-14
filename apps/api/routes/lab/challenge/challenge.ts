@@ -4,8 +4,20 @@ import { db } from "@repo/db/db";
 import { middleware } from "../../../middleware/auth";
 import { authorizeRole } from "../../../middleware/authorizeRole";
 import { challengeLimiter } from "@repo/common/rateLimit";
+import {
+  challege_active_request_range,
+  challege_active_requests_gauge,
+  challege_request_counter,
+} from "../../../middleware/metrics";
+import { challengeDbQueryDurationMs } from "@repo/common/observability";
 
 export const challengeRouter = express.Router();
+
+challengeRouter.use(
+  challege_request_counter,
+  challege_active_requests_gauge,
+  challege_active_request_range,
+);
 
 challengeRouter.post(
   "/:contestId/challenge",
@@ -39,6 +51,8 @@ challengeRouter.post(
         evaluationConfig,
       } = result.data;
 
+      const endDbTimer = challengeDbQueryDurationMs.startTimer;
+
       const findChallenge = await db.challenge.findUnique({
         where: {
           slug,
@@ -64,10 +78,12 @@ challengeRouter.post(
           allowedLanguages: allowedLanguages,
           maxPoints: maxPoint,
           contestId: contestId!,
-          difficulty: difficulty, // Provide a default or get from request
-          evaluationConfig: evaluationConfig!, // Provide a default or get from request
+          difficulty: difficulty,
+          evaluationConfig: evaluationConfig!,
         },
       });
+
+      endDbTimer();
 
       res.status(201).json({
         message: "challenge has been created",
@@ -88,5 +104,5 @@ challengeRouter.post(
         message: "Internal server error",
       });
     }
-  }
+  },
 );
