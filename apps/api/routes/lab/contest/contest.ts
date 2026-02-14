@@ -5,8 +5,20 @@ import { authorizeRole } from "../../../middleware/authorizeRole";
 import { contestSchema } from "@repo/common/validation";
 import { db } from "@repo/db/db";
 import { contestLimiter } from "@repo/common/rateLimit";
+import {
+  contest_active_requests_gauge,
+  contest_request_counter,
+  counter_active_request_range,
+} from "../../../middleware/metrics";
+import { contestDbQueryDurationMs } from "@repo/common/observability";
 
 export const contestRouter = express.Router();
+
+contestRouter.use(
+  contest_request_counter,
+  contest_active_requests_gauge,
+  counter_active_request_range,
+);
 
 contestRouter.post(
   "/create",
@@ -25,6 +37,8 @@ contestRouter.post(
 
     try {
       const { title, slug, startTime } = result.data;
+
+      const endTime = contestDbQueryDurationMs.startTimer();
 
       const findExistingContest = await db.contest.findUnique({
         where: {
@@ -47,6 +61,8 @@ contestRouter.post(
         },
       });
 
+      endTime();
+
       res.status(201).json({
         message: "contest has been created",
         createContest: {
@@ -60,5 +76,5 @@ contestRouter.post(
         message: `Internal server error ${err}`,
       });
     }
-  }
+  },
 );
