@@ -10,6 +10,7 @@ import {
   auth_active_requests_gauge,
   auth_active_request_range,
 } from "../../middleware/metrics";
+import { auth_db_query_duration_ms } from "@repo/common/observability";
 
 export const authRoute: Router = express.Router();
 
@@ -36,10 +37,14 @@ authRoute.post("/auth", authLimiter, async (req, res) => {
     });
 
     if (existUser) {
+      const endDbTimer = auth_db_query_duration_ms.startTimer();
+
       const comparePassword = await bcrypt.compare(
         password,
         existUser.password,
       );
+
+      endDbTimer();
 
       if (!comparePassword)
         return res.status(401).json({
@@ -67,7 +72,17 @@ authRoute.post("/auth", authLimiter, async (req, res) => {
         },
       });
     }
+
+    if (!username) {
+      res.status(400).json({
+        message: "Username is required for signup",
+      });
+      return;
+    }
+
     const hashPassword = await bcrypt.hash(password, 10);
+
+    const endDbTimer = auth_db_query_duration_ms.startTimer();
 
     const addUser = await db.user.create({
       data: {
@@ -77,6 +92,8 @@ authRoute.post("/auth", authLimiter, async (req, res) => {
         role: "USER",
       },
     });
+
+    endDbTimer();
 
     const token = jwt.sign(
       {
@@ -96,7 +113,7 @@ authRoute.post("/auth", authLimiter, async (req, res) => {
   } catch (err) {
     console.log(err);
     return res.status(500).json({
-      message: `Internal sever error`,
+      message: `Internal sever error ${err} `,
     });
   }
 });
