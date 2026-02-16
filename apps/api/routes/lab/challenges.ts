@@ -1,12 +1,14 @@
 import express from "express";
 import { authRoute } from "../user/auth.user";
 import { db } from "@repo/db/db";
+import { challengeIdFetchDurationMs } from "@repo/common/observability";
 
 export const challengesRouter = express.Router();
 
 challengesRouter.get("/:contestId/challenges", authRoute, async (req, res) => {
   const contestId = req.params.contestId;
   try {
+    const endTime = challengeIdFetchDurationMs.startTimer();
     const findContest = await db.contest.findUnique({
       where: {
         id: contestId,
@@ -28,6 +30,8 @@ challengesRouter.get("/:contestId/challenges", authRoute, async (req, res) => {
       return res.status(404).json({
         message: `Challenges in this contest ${findContest.title} not found`,
       });
+
+    endTime();
 
     res.status(200).json({
       challenges,
