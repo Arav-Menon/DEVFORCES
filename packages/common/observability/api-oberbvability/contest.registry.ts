@@ -29,3 +29,11 @@ export const contestDbQueryDurationMs = new client.Histogram({
   buckets: [0.1, 5, 15, 50, 100, 300, 500, 1000, 3000, 5000],
   registers: [register],
 });
+
+export const contestIdFetchDurationMs = new client.Histogram({
+  name: "contest_id_fetch_duration_ms",
+  help: "Duration of contest id fetch in ms",
+  labelNames: ["method", "route", "code"],
+  buckets: [0.1, 5, 15, 50, 100, 300, 500, 1000, 3000, 5000],
+  registers: [register],
+});
