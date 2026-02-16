@@ -10,7 +10,7 @@ import {
   auth_active_requests_gauge,
   auth_active_request_range,
 } from "../../middleware/metrics";
-import { auth_db_query_duration_ms } from "@repo/common/observability";
+import { authDbQueryDurationMs } from "@repo/common/observability";
 
 export const authRoute: Router = express.Router();
 
@@ -37,7 +37,7 @@ authRoute.post("/auth", authLimiter, async (req, res) => {
     });
 
     if (existUser) {
-      const endDbTimer = auth_db_query_duration_ms.startTimer();
+      const endDbTimer = authDbQueryDurationMs.startTimer();
 
       const comparePassword = await bcrypt.compare(
         password,
@@ -82,7 +82,7 @@ authRoute.post("/auth", authLimiter, async (req, res) => {
 
     const hashPassword = await bcrypt.hash(password, 10);
 
-    const endDbTimer = auth_db_query_duration_ms.startTimer();
+    const endDbTimer = authDbQueryDurationMs.startTimer();
 
     const addUser = await db.user.create({
       data: {
