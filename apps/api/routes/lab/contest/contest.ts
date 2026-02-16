@@ -8,7 +8,7 @@ import { contestLimiter } from "@repo/common/rateLimit";
 import {
   contest_active_requests_gauge,
   contest_request_counter,
-  counter_active_request_range,
+  contest_active_request_range,
 } from "../../../middleware/metrics";
 import { contestDbQueryDurationMs } from "@repo/common/observability";
 
@@ -17,7 +17,7 @@ export const contestRouter = express.Router();
 contestRouter.use(
   contest_request_counter,
   contest_active_requests_gauge,
-  counter_active_request_range,
+  contest_active_request_range,
 );
 
 contestRouter.post(
