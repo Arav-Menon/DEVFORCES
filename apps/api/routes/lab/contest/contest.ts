@@ -5,20 +5,12 @@ import { authorizeRole } from "../../../middleware/authorizeRole";
 import { contestSchema } from "@repo/common/validation";
 import { db } from "@repo/db/db";
 import { contestLimiter } from "@repo/common/rateLimit";
-import {
-  contest_active_requests_gauge,
-  contest_request_counter,
-  contest_active_request_range,
-} from "../../../middleware/metrics";
+import { contest_metrics_middleware } from "../../../middleware/metrics";
 import { contestDbQueryDurationMs } from "@repo/common/observability";
 
 export const contestRouter = express.Router();
 
-contestRouter.use(
-  contest_request_counter,
-  contest_active_requests_gauge,
-  contest_active_request_range,
-);
+contestRouter.use(contest_metrics_middleware);
 
 contestRouter.post(
   "/create",
@@ -38,7 +30,10 @@ contestRouter.post(
     try {
       const { title, slug, startTime } = result.data;
 
-      const endTime = contestDbQueryDurationMs.startTimer();
+      const endTime = contestDbQueryDurationMs.startTimer({
+        operation: "findUnique",
+        model: "Contest",
+      });
 
       const findExistingContest = await db.contest.findUnique({
         where: {
@@ -46,10 +41,12 @@ contestRouter.post(
         },
       });
 
-      if (findExistingContest)
+      if (findExistingContest) {
+        endTime({ success: "true" });
         return res.status(401).json({
           message: `contest with this name ${title} already exist`,
         });
+      }
 
       const createContest = await db.contest.create({
         data: {
@@ -61,7 +58,7 @@ contestRouter.post(
         },
       });
 
-      endTime();
+      endTime({ success: "true" });
 
       res.status(201).json({
         message: "contest has been created",
