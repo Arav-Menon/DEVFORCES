@@ -5,19 +5,11 @@ import { v4 as uuidV4 } from "uuid";
 import { middleware } from "../../../middleware/auth";
 import { client, pushSubmission } from "@repo/redis-stream/redis-client";
 import { submitLimiter } from "@repo/common/rateLimit";
-import {
-  submit_active_request_range,
-  submit_active_requests_gauge,
-  submit_request_counter,
-} from "../../../middleware/metrics";
+import { submit_metrics_middleware } from "../../../middleware/metrics";
 
 export const submitRouter = express.Router();
 
-submitRouter.use(
-  submit_request_counter,
-  submit_active_requests_gauge,
-  submit_active_request_range,
-);
+submitRouter.use(submit_metrics_middleware);
 
 submitRouter.post(
   "/submit/:contestId/:challengeId",
