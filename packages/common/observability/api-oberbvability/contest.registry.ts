@@ -17,7 +17,7 @@ export const contestActiveRequests = new client.Gauge({
 export const contestHttpDurationMs = new client.Histogram({
   name: "contest_http_request_duration_ms",
   help: "Duration of contest HTTP requests in ms",
-  labelNames: ["method", "route", "code"],
+  labelNames: ["method", "route", "statusCode"],
   buckets: [0.1, 5, 15, 50, 100, 300, 500, 1000, 3000, 5000],
   registers: [register],
 });
@@ -33,7 +33,7 @@ export const contestDbQueryDurationMs = new client.Histogram({
 export const contestIdFetchDurationMs = new client.Histogram({
   name: "contest_id_fetch_duration_ms",
   help: "Duration of contest id fetch in ms",
-  labelNames: ["method", "route", "code"],
+  labelNames: ["operation", "model", "success"],
   buckets: [0.1, 5, 15, 50, 100, 300, 500, 1000, 3000, 5000],
   registers: [register],
 });
