@@ -1,16 +1,22 @@
 import express from "express";
-import { authRoute } from "../user/auth.user";
+import { middleware } from "../../middleware/auth";
 import { db } from "@repo/db/db";
 import { contestIdFetchDurationMs } from "@repo/common/observability";
 
-export const contestsRouter = express.Router();
+import { contest_metrics_middleware } from "../../middleware/metrics";
 
-contestsRouter.get("/contests", authRoute, async (_, res) => {
+export const contestsRouter = express.Router();
+contestsRouter.use(contest_metrics_middleware);
+
+contestsRouter.get("/contests", middleware, async (_, res) => {
   try {
-    const endTime = contestIdFetchDurationMs.startTimer();
+    const endTime = contestIdFetchDurationMs.startTimer({
+      operation: "findMany",
+      model: "Contest",
+    });
     const contests = await db.contest.findMany();
 
-    endTime();
+    endTime({ success: "true" });
 
     return res.status(200).json({
       contests,
