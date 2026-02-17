@@ -1,24 +1,32 @@
 import express from "express";
-import { authRoute } from "../user/auth.user";
+import { middleware } from "../../middleware/auth";
 import { db } from "@repo/db/db";
 import { challengeIdFetchDurationMs } from "@repo/common/observability";
 
-export const challengesRouter = express.Router();
+import { challenge_metrics_middleware } from "../../middleware/metrics";
 
-challengesRouter.get("/:contestId/challenges", authRoute, async (req, res) => {
+export const challengesRouter = express.Router();
+challengesRouter.use(challenge_metrics_middleware);
+
+challengesRouter.get("/:contestId/challenges", middleware, async (req, res) => {
   const contestId = req.params.contestId;
   try {
-    const endTime = challengeIdFetchDurationMs.startTimer();
+    const endTime = challengeIdFetchDurationMs.startTimer({
+      operation: "findUnique",
+      model: "Contest",
+    });
     const findContest = await db.contest.findUnique({
       where: {
         id: contestId,
       },
     });
 
-    if (!findContest)
+    if (!findContest) {
+      endTime({ success: "false" });
       return res.status(404).json({
         message: `contest not found`,
       });
+    }
 
     const challenges = await db.challenge.findMany({
       where: {
@@ -26,12 +34,14 @@ challengesRouter.get("/:contestId/challenges", authRoute, async (req, res) => {
       },
     });
 
-    if (challenges.length == 0)
+    if (challenges.length == 0) {
+      endTime({ success: "true" });
       return res.status(404).json({
         message: `Challenges in this contest ${findContest.title} not found`,
       });
+    }
 
-    endTime();
+    endTime({ success: "true" });
 
     res.status(200).json({
       challenges,
