@@ -4,85 +4,47 @@ import {
   userProfileRequestCounter,
   userProfileHttpDurationMs,
   authHttpDurationMs,
+  register,
 } from "@repo/common/observability";
 import type { NextFunction } from "express";
 
-export const auth_request_counter = (
+export const auth_metrics_middleware = (
   req: any,
   res: any,
   next: NextFunction,
 ) => {
   const startTime = Date.now();
+  primaryProcessUsage.inc();
+  console.log(`[Metrics] Auth request started: ${req.method} ${req.path}`);
 
   res.on("finish", () => {
     const endTime = Date.now();
-    console.log(`Request took ${endTime - startTime}ms`);
-    authRequestCounter.inc({
-      method: req.method,
-      route: req.route ? req.route.path : req.path,
-      statusCode: res.statusCode,
-    });
-  });
-  next();
-};
-
-export const auth_active_requests_gauge = (
-  req: any,
-  res: any,
-  next: NextFunction,
-) => {
-  const startTime = Date.now();
-  primaryProcessUsage.inc();
-
-  res.on("finish", function () {
-    const endTime = Date.now();
-    console.log(`Request took ${endTime - startTime}ms`);
-
-    authRequestCounter.inc({
-      method: req.method,
-      route: req.route ? req.route.path : req.path,
-      statusCode: res.statusCode,
-    });
-    primaryProcessUsage.dec();
-  });
-
-  next();
-};
-
-export const auth_active_request_range = (
-  req: any,
-  res: any,
-  next: NextFunction,
-) => {
-  const startTime = Date.now();
-  primaryProcessUsage.inc();
-
-  res.on("finish", function () {
-    const endTime = Date.now();
     const duration = endTime - startTime;
 
-    // Increment request counter
-    authRequestCounter.inc({
-      method: req.method,
-      route: req.route ? req.route.path : req.path,
-      statusCode: res.statusCode,
-    });
+    const labels = {
+      method: String(req.method),
+      route: String(req.route ? req.route.path : req.path),
+      statusCode: String(res.statusCode),
+    };
 
-    authHttpDurationMs.observe(
-      {
-        method: req.method,
-        route: req.route ? req.route.path : req.path,
-        code: res.statusCode,
-      },
-      duration,
+    console.log(
+      `[Metrics] Auth request finished: ${labels.method} ${labels.route} ${labels.statusCode}, duration: ${duration}ms`,
     );
 
+    authRequestCounter.inc(labels);
+    authHttpDurationMs.observe(labels, duration);
     primaryProcessUsage.dec();
+
+    // Diagnostic: Check if it's in the registry
+    register.getSingleMetricAsString("auth_http_request_total").then((m) => {
+      console.log(`[Metrics] Current auth_http_request_total value:\n${m}`);
+    });
   });
+
   next();
 };
 
-export const user_profile_fetch_duration = (
+export const user_profile_metrics_middleware = (
   req: any,
   res: any,
   next: NextFunction,
@@ -94,21 +56,16 @@ export const user_profile_fetch_duration = (
     const endTime = Date.now();
     const duration = endTime - startTime;
 
-    userProfileRequestCounter.inc({
+    const labels = {
       method: req.method,
       route: req.route ? req.route.path : req.path,
       statusCode: res.statusCode,
-    });
+    };
 
-    userProfileHttpDurationMs.observe(
-      {
-        method: req.method,
-        route: req.route ? req.route.path : req.path,
-        code: res.statusCode,
-      },
-      duration,
-    );
+    userProfileRequestCounter.inc(labels);
+    userProfileHttpDurationMs.observe(labels, duration);
     primaryProcessUsage.dec();
   });
+
   next();
 };
