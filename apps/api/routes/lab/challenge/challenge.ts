@@ -4,20 +4,12 @@ import { db } from "@repo/db/db";
 import { middleware } from "../../../middleware/auth";
 import { authorizeRole } from "../../../middleware/authorizeRole";
 import { challengeLimiter } from "@repo/common/rateLimit";
-import {
-  challege_active_request_range,
-  challege_active_requests_gauge,
-  challege_request_counter,
-} from "../../../middleware/metrics";
+import { challenge_metrics_middleware } from "../../../middleware/metrics";
 import { challengeDbQueryDurationMs } from "@repo/common/observability";
 
 export const challengeRouter = express.Router();
 
-challengeRouter.use(
-  challege_request_counter,
-  challege_active_requests_gauge,
-  challege_active_request_range,
-);
+challengeRouter.use(challenge_metrics_middleware);
 
 challengeRouter.post(
   "/:contestId/challenge",
@@ -51,7 +43,10 @@ challengeRouter.post(
         evaluationConfig,
       } = result.data;
 
-      const endDbTimer = challengeDbQueryDurationMs.startTimer;
+      const endDbTimer = challengeDbQueryDurationMs.startTimer({
+        operation: "findUnique",
+        model: "Challenge",
+      });
 
       const findChallenge = await db.challenge.findUnique({
         where: {
@@ -60,6 +55,7 @@ challengeRouter.post(
       });
 
       if (findChallenge) {
+        endDbTimer({ success: "true" });
         return res.status(401).json({
           message: `Challenge with this title ${title} already exist`,
         });
@@ -83,7 +79,7 @@ challengeRouter.post(
         },
       });
 
-      endDbTimer();
+      endDbTimer({ success: "true" });
 
       res.status(201).json({
         message: "challenge has been created",
