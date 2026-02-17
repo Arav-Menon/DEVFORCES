@@ -17,7 +17,7 @@ export const submitActiveRequests = new client.Gauge({
 export const submitHttpDurationMs = new client.Histogram({
   name: "submit_http_request_duration_ms",
   help: "Duration of submit HTTP requests in ms",
-  labelNames: ["method", "route", "code"],
+  labelNames: ["method", "route", "statusCode"],
   buckets: [0.1, 5, 15, 50, 100, 300, 500, 1000, 3000, 5000],
   registers: [register],
 });
@@ -33,7 +33,7 @@ export const submitDbQueryDurationMs = new client.Histogram({
 export const submitIdFetchDurationMs = new client.Histogram({
   name: "submit_id_fetch_duration_ms",
   help: "Duration of submit id fetch in ms",
-  labelNames: ["method", "route", "code"],
+  labelNames: ["operation", "model", "success"],
   buckets: [0.1, 5, 15, 50, 100, 300, 500, 1000, 3000, 5000],
   registers: [register],
 });
