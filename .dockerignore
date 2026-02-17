@@ -4,8 +4,8 @@ node_modules
 .idea
 .vscode
 *.md
-.env
-.env.*
+**/.env
+**/.env.*
 dist
 build
 coverage
