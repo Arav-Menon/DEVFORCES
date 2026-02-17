@@ -17,7 +17,7 @@ export const primaryProcessUsage = new client.Gauge({
 export const authHttpDurationMs = new client.Histogram({
   name: "auth_http_request_duration_ms",
   help: "Duration of auth HTTP requests in ms",
-  labelNames: ["method", "route", "code"],
+  labelNames: ["method", "route", "statusCode"],
   buckets: [0.1, 5, 15, 50, 100, 300, 500, 1000, 3000, 5000],
   registers: [register],
 });
@@ -48,7 +48,7 @@ export const userProfileDbQueryDurationMs = new client.Histogram({
 export const userProfileHttpDurationMs = new client.Histogram({
   name: "user_profile_http_duration_ms",
   help: "Duration of user profile fetch HTTP requests in ms",
-  labelNames: ["method", "route", "code"],
+  labelNames: ["method", "route", "statusCode"],
   buckets: [0.1, 5, 15, 50, 100, 300, 500, 1000, 3000, 5000],
   registers: [register],
 });
