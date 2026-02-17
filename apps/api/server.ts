@@ -14,7 +14,7 @@ import { updateChallengeRouter } from "./routes/lab/challenge/update.challenge";
 import { contestsRouter } from "./routes/lab/contests";
 import { challengesRouter } from "./routes/lab/challenges";
 import { submitRouter } from "./routes/lab/submit-challenge/submit";
-import { register } from "@repo/common/observability";
+import { serveMetrics } from "@repo/common/observability";
 
 export const app = express();
 app.use(express.json());
@@ -45,11 +45,5 @@ app.use("/api/v1/contest/", challengesRouter);
 app.use("/api/v1/challenge/", submitRouter);
 
 app.get("/metrics", async (req, res) => {
-  try {
-    const metrics = await register.metrics();
-    res.set("Content-Type", register.contentType);
-    res.end(metrics);
-  } catch (err) {
-    res.status(500).end(err);
-  }
+  await serveMetrics(res);
 });
