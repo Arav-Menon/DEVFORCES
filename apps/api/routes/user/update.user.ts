@@ -5,7 +5,10 @@ import { userSchema } from "@repo/common/validation";
 import bcrypt from "bcrypt";
 import { middleware } from "../../middleware/auth";
 
+import { user_profile_metrics_middleware } from "../../middleware/metrics";
+
 export const updateUserRoute = express.Router();
+updateUserRoute.use(user_profile_metrics_middleware);
 
 updateUserRoute.put(
   "/profile/update/:userId",
