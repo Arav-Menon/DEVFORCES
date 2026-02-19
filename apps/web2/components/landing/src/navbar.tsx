@@ -24,6 +24,7 @@ export default function Navbar() {
               );
             })}
             <Button
+              // href={"/signin"}
               variant={"default"}
               className="bg-white text-zinc-950 hover:bg-zinc-200 transition-colors font-semibold px-6"
             >
