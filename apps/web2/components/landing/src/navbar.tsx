@@ -23,13 +23,13 @@ export default function Navbar() {
                 </Link>
               );
             })}
+            <Link href={"/signin"} >
             <Button
-              // href={"/signin"}
               variant={"default"}
               className="bg-white text-zinc-950 hover:bg-zinc-200 transition-colors font-semibold px-6"
             >
               Login
-            </Button>
+            </Button></Link>
           </div>
         </div>
       </nav>
