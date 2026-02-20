@@ -130,8 +130,9 @@ const mockSubmissions = [
 
 const mockRatingData = Array.from({ length: 30 }, (_, i) => ({
   day: i + 1,
-  rating: 1700 + Math.sin(i / 5) * 150 + Math.random() * 100,
+  rating: 1700 + Math.sin(i / 5) * 150 + Math.cos(i / 3) * 50,
 }));
+
 
 const mockLeaderboardUsers = [
   { rank: 1, username: "codemaster", rating: 2847, isCurrentUser: false },
