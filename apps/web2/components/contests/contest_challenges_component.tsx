@@ -1,271 +1,234 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { CheckCircle2, Clock, Users, Award, BookOpen } from 'lucide-react';
-import { useState } from 'react';
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Clock, Award, ChevronRight, Code2, BookOpen, AlertCircle, Star } from "lucide-react";
+import { useEffect, useState } from "react";
+import { fetchChallenges } from "@/utils/challenge_api/challenges_api/api";
 
-export default function ContestDetailPage({ params }: { params: { id: string } }) {
-  const [activeTab, setActiveTab] = useState('problems');
+interface EvaluationConfig {
+  scoring?: Record<string, number>;
+  promptType?: string;
+  strictRules?: string[];
+  outputFormat?: string;
+}
 
-  // Mock data
-  const contest = {
-    id: params.id,
-    name: 'DevForce Weekly #100',
-    status: 'LIVE',
-    timeLeft: '1h 58m',
-    startTime: '2 hours ago',
-    endTime: 'Dec 20, 2026 at 14:00',
-    participants: 3241,
-    problems: [
-      {
-        id: 1,
-        name: 'Two Sum',
-        difficulty: 'Easy',
-        acceptance: 47.2,
-        points: 100,
-        status: 'Solved',
-        submissions: 1,
-      },
-      {
-        id: 2,
-        name: 'Longest Substring Without Repeating Characters',
-        difficulty: 'Medium',
-        acceptance: 32.1,
-        points: 200,
-        status: 'Attempted',
-        submissions: 3,
-      },
-      {
-        id: 3,
-        name: 'Median of Two Sorted Arrays',
-        difficulty: 'Hard',
-        acceptance: 24.5,
-        points: 300,
-        status: 'Not started',
-        submissions: 0,
-      },
-      {
-        id: 4,
-        name: 'Regular Expression Matching',
-        difficulty: 'Hard',
-        acceptance: 26.8,
-        points: 300,
-        status: 'Not started',
-        submissions: 0,
-      },
-    ],
-    leaderboard: [
-      { rank: 1, name: 'AlexCoder', score: 600, problems: 3 },
-      { rank: 2, name: 'TechNinja', score: 500, problems: 2 },
-      { rank: 3, name: 'CodeMaster', score: 500, problems: 2 },
-      { rank: 4, name: 'DebugDemon', score: 400, problems: 2 },
-      { rank: 5, name: 'ByteWizard', score: 300, problems: 1 },
-    ],
-    rules: [
-      'Submissions are judged on an online judge and will be checked immediately.',
-      'The score will be reduced by 1 point for each minute passed since the start.',
-      'You can view your current score at any time.',
-      'Cheating and plagiarism are strictly prohibited.',
-    ],
+interface Challenge {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  requirements: string;
+  constraints?: string;
+  examples?: any;
+  difficulty: "EASY" | "MEDIUM" | "HARD";
+  maxPoints: number;
+  allowedLanguages: string[];
+  evaluationConfig: EvaluationConfig;
+  startAt: string;
+  endAt: string;
+  contestId: string;
+}
+
+function DifficultyBadge({ difficulty }: { difficulty: Challenge["difficulty"] }) {
+  const map = {
+    EASY: "text-green-400 bg-green-400/10 border-green-400/20",
+    MEDIUM: "text-yellow-400 bg-yellow-400/10 border-yellow-400/20",
+    HARD: "text-red-400 bg-red-400/10 border-red-400/20",
   };
+  return (
+    <span
+      className={`inline-block px-2.5 py-0.5 rounded-full border text-xs font-semibold capitalize ${map[difficulty]}`}
+    >
+      {difficulty.charAt(0) + difficulty.slice(1).toLowerCase()}
+    </span>
+  );
+}
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case 'Easy':
-        return 'text-green-400 bg-green-400/10';
-      case 'Medium':
-        return 'text-yellow-400 bg-yellow-400/10';
-      case 'Hard':
-        return 'text-red-400 bg-red-400/10';
-      default:
-        return 'text-zinc-400 bg-zinc-400/10';
-    }
-  };
+function formatDate(dateStr: string) {
+  return new Date(dateStr).toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZoneName: "short",
+  });
+}
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'Solved':
-        return <CheckCircle2 className="w-5 h-5 text-green-400" />;
-      case 'Attempted':
-        return <div className="w-5 h-5 rounded-full border-2 border-yellow-400 flex items-center justify-center"><div className="w-2 h-2 bg-yellow-400 rounded-full"></div></div>;
-      default:
-        return <div className="w-5 h-5 rounded-full border-2 border-zinc-600"></div>;
-    }
-  };
+function LanguagePill({ lang }: { lang: string }) {
+  return (
+    <span className="px-2 py-0.5 rounded bg-zinc-800 border border-zinc-700 text-xs text-zinc-300 font-mono">
+      {lang}
+    </span>
+  );
+}
+
+export default function ContestDetailPage({ contestId }: { contestId: string }) {
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!contestId) return;
+    const load = async () => {
+      try {
+        const data = await fetchChallenges(contestId);
+        setChallenges(data);
+      } catch (err: any) {
+        setError("Failed to load challenges.");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [contestId]);
 
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
       <header className="border-b border-zinc-800 bg-black sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="flex items-start justify-between mb-6">
+        <div className="max-w-7xl mx-auto px-6 py-5">
+          <Link
+            href="/contests"
+            className="inline-flex items-center gap-1 text-zinc-400 hover:text-white text-sm transition mb-3"
+          >
+            ← Back to Contests
+          </Link>
+          <div className="flex items-center justify-between">
             <div>
-              <Link href="/contests" className="text-blue-400 hover:text-blue-300 text-sm mb-3 inline-block">
-                ← Back to Contests
-              </Link>
-              <h1 className="text-3xl font-bold mb-3">{contest.name}</h1>
-              <div className="flex gap-6 text-sm">
-                <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></span>
-                  <span className="text-green-400">LIVE</span>
-                </div>
-                <div className="flex items-center gap-2 text-zinc-400">
-                  <Clock className="w-4 h-4" />
-                  {contest.timeLeft} left
-                </div>
-                <div className="flex items-center gap-2 text-zinc-400">
-                  <Users className="w-4 h-4" />
-                  {contest.participants} participants
-                </div>
-              </div>
+              <h1 className="text-3xl font-bold">Challenges</h1>
+              <p className="text-zinc-500 text-sm mt-1">
+                Complete all challenges to maximize your score
+              </p>
             </div>
-            <Button className="bg-blue-500 text-white hover:bg-blue-600">
-              Resume Contest
-            </Button>
-          </div>
-
-          {/* Tabs */}
-          <div className="flex gap-8 border-t border-zinc-800 pt-4">
-            {['problems', 'leaderboard', 'rules'].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-1 py-1 capitalize font-semibold transition ${
-                  activeTab === tab
-                    ? 'text-blue-400 border-b-2 border-blue-400'
-                    : 'text-zinc-400 hover:text-white'
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
+            {!loading && (
+              <span className="text-zinc-400 text-sm">
+                {challenges.length} challenge{challenges.length !== 1 ? "s" : ""}
+              </span>
+            )}
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Section - Main Content */}
-          <div className="lg:col-span-2">
-            {activeTab === 'problems' && (
-              <div className="space-y-4">
-                <h2 className="text-2xl font-bold mb-6">Problems</h2>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-zinc-800">
-                        <th className="text-left py-4 px-4 text-zinc-400 font-medium">Status</th>
-                        <th className="text-left py-4 px-4 text-zinc-400 font-medium">Problem</th>
-                        <th className="text-left py-4 px-4 text-zinc-400 font-medium">Difficulty</th>
-                        <th className="text-left py-4 px-4 text-zinc-400 font-medium">Acceptance</th>
-                        <th className="text-left py-4 px-4 text-zinc-400 font-medium">Points</th>
-                        <th className="text-left py-4 px-4 text-zinc-400 font-medium">Submissions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {contest.problems.map((problem, idx) => (
-                        <tr
-                          key={problem.id}
-                          className="border-b border-zinc-800 hover:bg-zinc-900/30 transition"
-                        >
-                          <td className="py-4 px-4">
-                            {getStatusIcon(problem.status)}
-                          </td>
-                          <td className="py-4 px-4">
-                            <Link href={`/challenges/${problem.id}`}>
-                              <span className="hover:text-blue-400 transition cursor-pointer font-medium">
-                                {problem.name}
-                              </span>
-                            </Link>
-                          </td>
-                          <td className="py-4 px-4">
-                            <span className={`px-2 py-1 rounded text-xs font-medium ${getDifficultyColor(problem.difficulty)}`}>
-                              {problem.difficulty}
-                            </span>
-                          </td>
-                          <td className="py-4 px-4 text-zinc-400">{problem.acceptance.toFixed(1)}%</td>
-                          <td className="py-4 px-4 font-semibold">{problem.points}</td>
-                          <td className="py-4 px-4 text-zinc-400">{problem.submissions}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+      {/* Content */}
+      <main className="max-w-7xl mx-auto px-6 py-10">
+        {loading ? (
+          <div className="space-y-4">
+            {[...Array(3)].map((_, i) => (
+              <div
+                key={i}
+                className="border border-zinc-800 rounded-lg p-6 animate-pulse space-y-3"
+              >
+                <div className="h-5 w-64 bg-zinc-800 rounded" />
+                <div className="h-3 w-48 bg-zinc-800 rounded" />
+                <div className="h-3 w-full bg-zinc-800 rounded" />
               </div>
-            )}
-
-            {activeTab === 'leaderboard' && (
-              <div className="space-y-4">
-                <h2 className="text-2xl font-bold mb-6">Live Leaderboard</h2>
-                <div className="space-y-2">
-                  {contest.leaderboard.map((entry, idx) => (
-                    <div
-                      key={entry.rank}
-                      className="flex items-center gap-4 p-4 rounded-lg border border-zinc-800 hover:border-blue-500/30 transition"
-                    >
-                      <div className="text-center font-bold w-12">
-                        {entry.rank === 1 && <span className="text-yellow-400">🥇</span>}
-                        {entry.rank === 2 && <span className="text-gray-300">🥈</span>}
-                        {entry.rank === 3 && <span className="text-orange-600">🥉</span>}
-                        {entry.rank > 3 && <span>{entry.rank}</span>}
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-semibold">{entry.name}</p>
-                        <p className="text-sm text-zinc-400">{entry.problems} problems solved</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold text-lg text-blue-400">{entry.score}</p>
-                        <p className="text-xs text-zinc-400">points</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'rules' && (
-              <div className="space-y-4">
-                <h2 className="text-2xl font-bold mb-6">Contest Rules</h2>
-                <div className="space-y-4">
-                  {contest.rules.map((rule, idx) => (
-                    <div key={idx} className="flex gap-4 p-4 rounded-lg border border-zinc-800">
-                      <div className="w-6 h-6 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center flex-shrink-0 text-sm font-bold">
-                        {idx + 1}
-                      </div>
-                      <p className="text-zinc-300">{rule}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            ))}
           </div>
-
-          {/* Right Sidebar - Leaderboard Preview */}
-          <div className="lg:col-span-1">
-            <div className="border border-zinc-800 rounded-lg p-6 sticky top-24">
-              <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <Award className="w-5 h-5 text-blue-400" />
-                Top Performers
-              </h3>
-              <div className="space-y-3">
-                {contest.leaderboard.slice(0, 3).map((entry) => (
-                  <div key={entry.rank} className="flex items-center justify-between p-3 rounded bg-zinc-900/30">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-yellow-400">{entry.rank}</span>
-                      <span className="font-medium">{entry.name}</span>
+        ) : error ? (
+          <div className="flex items-center gap-3 text-red-400 border border-red-500/20 bg-red-500/10 rounded-lg p-5">
+            <AlertCircle className="w-5 h-5 flex-shrink-0" />
+            <p>{error}</p>
+          </div>
+        ) : challenges.length === 0 ? (
+          <div className="text-center py-24">
+            <BookOpen className="w-12 h-12 text-zinc-700 mx-auto mb-4" />
+            <p className="text-zinc-400 text-lg mb-1">No challenges yet</p>
+            <p className="text-zinc-600 text-sm">Check back once the contest starts</p>
+          </div>
+        ) : (
+          <div className="space-y-5">
+            {challenges.map((challenge, idx) => (
+              <div
+                key={challenge.id}
+                className="bg-gradient-to-br from-zinc-900 to-zinc-950 border border-zinc-800 rounded-xl p-6 hover:border-zinc-700 transition group"
+              >
+                {/* Top row */}
+                <div className="flex flex-col md:flex-row md:items-start gap-4 mb-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-3 mb-1 flex-wrap">
+                      <span className="text-zinc-600 font-mono text-sm">#{idx + 1}</span>
+                      <h2 className="text-lg font-bold text-white group-hover:text-white/80 transition">
+                        {challenge.title}
+                      </h2>
+                      <DifficultyBadge difficulty={challenge.difficulty} />
                     </div>
-                    <span className="text-blue-400 font-bold">{entry.score}</span>
+                    <p className="text-zinc-400 text-sm leading-relaxed line-clamp-2">
+                      {challenge.description}
+                    </p>
                   </div>
-                ))}
+
+                  {/* Points */}
+                  <div className="flex items-center gap-1.5 bg-yellow-500/10 border border-yellow-500/20 rounded-lg px-3 py-2 flex-shrink-0 self-start">
+                    <Star className="w-4 h-4 text-yellow-400" />
+                    <span className="text-yellow-300 font-bold text-sm">{challenge.maxPoints} pts</span>
+                  </div>
+                </div>
+
+                {/* Languages */}
+                <div className="flex flex-wrap gap-1.5 mb-4">
+                  <span className="text-xs text-zinc-500 self-center mr-1 flex items-center gap-1">
+                    <Code2 className="w-3.5 h-3.5" /> Allowed:
+                  </span>
+                  {challenge.allowedLanguages.map((lang) => (
+                    <LanguagePill key={lang} lang={lang} />
+                  ))}
+                </div>
+
+                {/* Time + strict rules preview */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-5 text-sm text-zinc-500">
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-3.5 h-3.5 flex-shrink-0" />
+                    <span>
+                      Starts:{" "}
+                      <span className="text-zinc-300">{formatDate(challenge.startAt)}</span>
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-3.5 h-3.5 flex-shrink-0" />
+                    <span>
+                      Ends:{" "}
+                      <span className="text-zinc-300">{formatDate(challenge.endAt)}</span>
+                    </span>
+                  </div>
+                </div>
+
+                {/* Strict rules if any */}
+                {challenge.evaluationConfig?.strictRules &&
+                  challenge.evaluationConfig.strictRules.length > 0 && (
+                    <div className="rounded-lg p-3 mb-5">
+                      <p className="text-xs text-white font-semibold mb-2 flex items-center gap-1.5">
+                        <AlertCircle className="w-3.5 h-3.5" /> Strict Rules
+                      </p>
+                      <ul className="space-y-1">
+                        {challenge.evaluationConfig.strictRules.map((rule, i) => (
+                          <li key={i} className="text-xs text-zinc-400 flex gap-2">
+                            <span className="text-red-500 mt-0.5">•</span>
+                            {rule}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                {/* Footer CTA */}
+                <div className="flex items-center justify-between pt-4 border-t border-zinc-800">
+                  <span className="text-xs text-zinc-600 font-mono">/{challenge.slug}</span>
+                <Link href={`/challenges/${challenge.slug}?c=${challenge.contestId}`}>
+                    <Button
+                      size="sm"
+                      className="bg-white/90 hover:bg-white/80 text-zinc-900 font-semibold"
+                    >
+                      Solve Challenge
+                      <ChevronRight className="w-4 h-4 ml-1" />
+                    </Button>
+                  </Link>
+                </div>
               </div>
-              <Button className="w-full mt-6 bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 border border-blue-500/30">
-                View Full Leaderboard
-              </Button>
-            </div>
+            ))}
           </div>
-        </div>
+        )}
       </main>
     </div>
   );
