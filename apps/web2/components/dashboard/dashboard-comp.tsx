@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { StatsCard } from "@/components/dashboard/stats-card";
 import { ContestWidget } from "@/components/dashboard/contest-widget";
 import { ProblemTablePreview } from "@/components/dashboard/problem-table-preview";
 import { SubmissionList } from "@/components/dashboard/submission-list";
@@ -9,6 +8,11 @@ import { RatingChart } from "@/components/dashboard/rating-chart";
 import { LeaderboardPreview } from "@/components/dashboard/leaderboard-preview";
 import { Button } from "@/components/ui/button";
 import { Trophy, Target, Zap, Flame, Code, BookOpen, Plus } from "lucide-react";
+import { useEffect, useState } from "react";
+import { fetchContest } from "@/utils/challenge_api/weekly-devforce-contests/api";
+
+
+
 
 // Mock data
 const mockStats = {
@@ -19,14 +23,6 @@ const mockStats = {
   contestRating: "Top 10%",
 };
 
-const mockContest = {
-  contestId: "1",
-  name: "DevForce Weekly #47",
-  timeRemaining: "2h 30m",
-  userRank: 45,
-  totalParticipants: 8432,
-  status: "ongoing" as const,
-};
 
 const mockProblems = [
   {
@@ -146,6 +142,25 @@ const mockLeaderboardUsers = [
 ];
 
 export default function DashboardPage() {
+  const [contests, setContests] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchWeeklyContests = async () => {
+      try {
+        const response = await fetchContest();
+        setContests(response);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchWeeklyContests();
+  }, []);
+
+  const latestContest = contests && contests.length > 0 ? contests[0] : null;
+
   return (
     <main className="bg-black text-white min-h-screen">
       {/* Header */}
@@ -159,7 +174,7 @@ export default function DashboardPage() {
               </p>
             </div>
             <div className="flex gap-3">
-              <Link href="/problems">
+              <Link href="/profile/sd">
                 <Button className="bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700">
                   <Code className="w-4 h-4 mr-2" />
                   Solve Problems
@@ -177,42 +192,26 @@ export default function DashboardPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className=" g-gradient-to-br from-zinc-900 to-zinc-950 grid grid-cols-1 text-white md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-          <StatsCard
-            icon={Trophy}
-            label="Rating"
-            value={mockStats.rating}
-            trend={{ value: 12, isPositive: true }}
-          />
-          <StatsCard
-            icon={Target}
-            label="Global Rank"
-            value={`#${mockStats.rank}`}
-            trend={{ value: 5, isPositive: true }}
-          />
-          <StatsCard
-            icon={Code}
-            label="Problems Solved"
-            value={mockStats.problemsSolved}
-            trend={{ value: 8, isPositive: true }}
-          />
-          <StatsCard
-            icon={Flame}
-            label="Current Streak"
-            value={mockStats.streak}
-            suffix="days"
-            trend={{ value: 2, isPositive: true }}
-          />
-          <StatsCard
-            icon={Zap}
-            label="Contest Rating"
-            value={mockStats.contestRating}
-          />
-        </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
           <div className="lg:col-span-2 space-y-8">
-            <ContestWidget {...mockContest} />
+            {loading ? (
+              <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-8 animate-pulse">
+                <div className="h-8 w-48 bg-zinc-800 rounded mb-4"></div>
+                <div className="h-4 w-64 bg-zinc-800 rounded mb-6"></div>
+                <div className="h-10 w-full bg-zinc-800 rounded"></div>
+              </div>
+            ) : latestContest ? (
+              <ContestWidget
+                title={latestContest.title}
+                slug={latestContest.slug}
+                startTime={latestContest.startTime}
+                status={latestContest.status}
+              />
+            ) : (
+              <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-8 text-center text-zinc-500">
+                No contests available right now.
+              </div>
+            )}
 
             <ProblemTablePreview
               problems={mockProblems}
