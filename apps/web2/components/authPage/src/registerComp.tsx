@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { SocialLogin } from "@/components/social-login";
 import { Eye, EyeOff, Check, X } from "lucide-react";
+import { register } from "@/utils";
+import { useRouter } from "next/navigation";
 
 export default function SignUp() {
   const [username, setUsername] = useState("");
@@ -15,11 +17,9 @@ export default function SignUp() {
   const [password, setPassword] = useState("");
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-
-  // Password strength indicators
+  const router = useRouter();
   const passwordStrength = {
     hasMinLength: password.length >= 8,
     hasUppercase: /[A-Z]/.test(password),
@@ -28,7 +28,6 @@ export default function SignUp() {
     hasSpecial: /[!@#$%^&*]/.test(password),
   };
 
-//   const passwordsMatch = password === confirmPassword && password.length > 0;
   const isPasswordStrong =
     Object.values(passwordStrength).filter(Boolean).length >= 3;
 
@@ -36,7 +35,6 @@ export default function SignUp() {
     e.preventDefault();
     setError("");
 
-    // Validation
     if (!email || !password || !username) {
       setError("Please fill in all fields");
       return;
@@ -54,10 +52,10 @@ export default function SignUp() {
 
     setIsLoading(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    console.log("[v0] Sign up attempt:", { email });
+    const token = await register(username, email, password);
+    console.log(token);
+    localStorage.setItem("token", token);
+    router.push("/dashboard");
     setIsLoading(false);
   };
 
@@ -96,16 +94,36 @@ export default function SignUp() {
 
         {/*start changing from here*/}
 
-        {/* Password Field */}
         <div className="space-y-2">
           <Label htmlFor="Email" className="text-white text-sm font-medium">
             Email
           </Label>
           <div className="relative">
             <Input
-              id="password"
+              id="Email"
               type="text"
               placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className={`bg-zinc-900 border-zinc-700 text-white placeholder-zinc-500 focus:ring-blue-500/20 h-10 pr-10 transition`}
+            />
+            <button
+              type="button"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition"
+            ></button>
+          </div>
+        </div>
+
+        {/* Password Field */}
+        <div className="space-y-2">
+          <Label htmlFor="Email" className="text-white text-sm font-medium">
+            Password
+          </Label>
+          <div className="relative">
+            <Input
+              id="password"
+              type="text"
+              placeholder="********"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="bg-zinc-900 border-zinc-700 text-white placeholder-zinc-500 focus:border-blue-500 focus:ring-blue-500/20 h-10 pr-10"
@@ -195,41 +213,6 @@ export default function SignUp() {
         </div>
 
         {/* Confirm Password Field */}
-        <div className="space-y-2">
-          <Label htmlFor="Password" className="text-white text-sm font-medium">
-            Password
-          </Label>
-          <div className="relative">
-            <Input
-              id="Password"
-              type={showConfirmPassword ? "text" : "password"}
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className={`bg-zinc-900 border-zinc-700 text-white placeholder-zinc-500 focus:ring-blue-500/20 h-10 pr-10 transition`}
-            />
-            <button
-              type="button"
-              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition"
-            >
-              {showConfirmPassword ? (
-                <EyeOff className="w-4 h-4" />
-              ) : (
-                <Eye className="w-4 h-4" />
-              )}
-            </button>
-          </div>
-          {/* {confirmPassword && (
-            <p
-              className={`text-xs ${passwordsMatch ? "text-green-500" : "text-red-500"}`}
-            >
-              {passwordsMatch
-                ? "✓ Passwords match"
-                : "✗ Passwords do not match"}
-            </p>
-          )} */}
-        </div>
 
         {/* Terms Checkbox */}
         <div className="flex items-start space-x-2">
