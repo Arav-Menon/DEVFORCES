@@ -17,7 +17,7 @@ export const processWithAi = async ({
     const response = await axios.post(
       "https://openrouter.ai/api/v1/chat/completions",
       {
-        model: "mistralai/devstral-2512:free",
+        model: "arcee-ai/trinity-large-preview:free",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: code },
@@ -25,12 +25,12 @@ export const processWithAi = async ({
       },
       {
         headers: {
-          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY!}`,
+          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
           "Content-Type": "application/json",
           "HTTP-Referer": "http://localhost:4000",
           "X-Title": "DevForces Evaluator",
         },
-      }
+      },
     );
     const result = response.data.choices[0].message.content;
 
