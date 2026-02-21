@@ -7,18 +7,18 @@ import { useSearchParams } from "next/navigation";
 import {
   Copy,
   RotateCcw,
-  Play,
   Send,
   X,
   Clock,
   Star,
   AlertCircle,
-  ChevronRight,
   Code2,
   BookOpen,
   CheckCircle2,
+  ArrowLeft,
 } from "lucide-react";
 import { fetchChallenge } from "@/utils/challenge_api/challenges_api/api";
+import { codeSubmission } from "@/utils/submit_api/api";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 interface Challenge {
@@ -101,6 +101,54 @@ export default function ChallengesPage({ slug }: { slug: string }) {
   const [selectedLanguage, setSelectedLanguage] = useState("javascript");
   const [code, setCode] = useState(() => getDefaultCode("javascript"));
   const [testResults, setTestResults] = useState<any>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [aiFeedback, setAiFeedback] = useState<{
+    score: number;
+    reason: string;
+  } | null>(null);
+
+  // WebSocket for real-time AI feedback
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    let userId: string | null = null;
+    try {
+      const payload = token.split(".")[1];
+      userId = JSON.parse(atob(payload)).id;
+    } catch (e) {
+      console.error("Failed to parse token", e);
+    }
+
+    if (!userId) return;
+
+    const ws = new WebSocket("ws://localhost:8080");
+
+    ws.onopen = () => console.log("Connected to evaluation service");
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        // data looks like { result: string (JSON), userId: string, challengeId: string }
+        if (challenge && data.userId === userId && data.challengeId === challenge.id) {
+          const cleaned = data.result
+            .replace(/```json/g, "")
+            .replace(/```/g, "")
+            .trim();
+          const parsedResult = JSON.parse(cleaned);
+          setAiFeedback({
+            score: Number(parsedResult.score),
+            reason: parsedResult.reason,
+          });
+        }
+      } catch (e) {
+        console.error("Error processing message", e);
+      }
+    };
+
+    return () => ws.close();
+  }, [challenge?.id]);
+
 
   // Fetch challenge data
   useEffect(() => {
@@ -158,27 +206,34 @@ export default function ChallengesPage({ slug }: { slug: string }) {
 
   const diff = difficultyConfig[challenge.difficulty];
 
-  const handleRun = () => {
-    setTestResults({
-      type: "run",
-      passed: 1,
-      total: 1,
-      cases: [
-        {
-          label: "Sample",
-          status: "passed",
-          output: "(Run output appears here)",
-        },
-      ],
-    });
-  };
-
-  const handleSubmit = () => {
-    setTestResults({
-      type: "submit",
-      message: "Submitted — awaiting evaluation",
-      info: "Your submission will be evaluated by AI. Results will appear shortly.",
-    });
+  const handleSubmit = async () => {
+    if (!challenge || submitting) return;
+    setSubmitting(true);
+    setAiFeedback(null);
+    try {
+      const result = await codeSubmission(
+        challenge.contestId,
+        challenge.id,
+        code,
+        selectedLanguage,
+      );
+      setTestResults({
+        type: "submit",
+        message: "Submitted — awaiting evaluation",
+        info: `Submission ID: ${result.submissionId}. Your code will be evaluated by AI shortly.`,
+      });
+      setIsSubmitted(true);
+    } catch (err: any) {
+      setTestResults({
+        type: "submit",
+        message: "Submission failed",
+        info:
+          err?.response?.data?.message ??
+          "An unexpected error occurred. Please try again.",
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -191,7 +246,7 @@ export default function ChallengesPage({ slug }: { slug: string }) {
               href={`/contest/${challenge.contestId}/challenges`}
               className="text-zinc-400 hover:text-white text-sm transition flex-shrink-0"
             >
-              ← Back
+              <ArrowLeft strokeWidth={2.5} />
             </Link>
             <div className="min-w-0">
               <h1 className="text-base font-bold text-white truncate">
@@ -219,10 +274,25 @@ export default function ChallengesPage({ slug }: { slug: string }) {
           <div className="flex gap-2 flex-shrink-0">
             <Button
               onClick={handleSubmit}
+              disabled={submitting || isSubmitted}
               size="sm"
-              className="bg-white/90 hover:bg-white/80 text-zinc-900 font-semibold flex items-center gap-1.5"
+              className="bg-white/90 hover:bg-white/80 text-zinc-900 font-semibold flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Send className="w-3.5 h-3.5" /> Submit
+              {isSubmitted ? (
+                <>
+                  <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />
+                  Submitted
+                </>
+              ) : submitting ? (
+                <>
+                  <div className="w-3.5 h-3.5 border-2 border-zinc-600 border-t-zinc-900 rounded-full animate-spin" />
+                  Submitting…
+                </>
+              ) : (
+                <>
+                  <Send className="w-3.5 h-3.5" /> Submit
+                </>
+              )}
             </Button>
           </div>
         </div>
@@ -451,12 +521,14 @@ export default function ChallengesPage({ slug }: { slug: string }) {
                     ? "Submission Result"
                     : "Test Results"}
                 </h3>
-                <button
-                  onClick={() => setTestResults(null)}
-                  className="text-zinc-500 hover:text-white transition"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+                {!aiFeedback && (
+                  <button
+                    onClick={() => setTestResults(null)}
+                    className="text-zinc-500 hover:text-white transition"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
               </div>
 
               {testResults.type === "submit" ? (
@@ -494,6 +566,27 @@ export default function ChallengesPage({ slug }: { slug: string }) {
                       </span>
                     </div>
                   ))}
+                </div>
+              )}
+
+              {aiFeedback && (
+                <div className="mt-4 pt-4 border-t border-zinc-800 space-y-3 animate-fade-in">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                      Feedback
+                    </h4>
+                    <div className="flex items-center gap-1.5 px-3 py-1 rounded bg-yellow-400/20 border border-yellow-400/30 text-yellow-400">
+                      <Star className="w-4 h-4 fill-current" />
+                      <span className="text-sm font-bold">
+                        Score: {aiFeedback.score} / {challenge.maxPoints} pts
+                      </span>
+                    </div>
+                  </div>
+                  <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700/50">
+                    <p className="text-sm text-zinc-200 leading-relaxed">
+                      {aiFeedback.reason}
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
