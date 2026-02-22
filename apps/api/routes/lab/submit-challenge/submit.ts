@@ -6,6 +6,7 @@ import { middleware } from "../../../middleware/auth";
 import { client, pushSubmission } from "@repo/redis-stream/redis-client";
 import { submitLimiter } from "@repo/common/rateLimit";
 import { submit_metrics_middleware } from "../../../middleware/metrics";
+import { db } from "@repo/db/db";
 
 export const submitRouter = express.Router();
 
@@ -40,6 +41,15 @@ submitRouter.post(
       language,
       systemPrompt,
     };
+
+    await db.submission.create({
+      data: {
+        submissionId: payload.submissionId,
+        userId: payload.userId,
+        challengeId: payload.challengeId,
+        status: "PENDING",
+      },
+    });
 
     await client.set(`submission:${submissionId}`, JSON.stringify(payload), {
       EX: 3600,
