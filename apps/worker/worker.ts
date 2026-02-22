@@ -1,5 +1,6 @@
 import { ackSubmission, pullSubmission } from "@repo/redis-stream/redis-client";
 import { processWithAi } from "@repo/ai-evaluator/evaluator";
+import { db } from "@repo/db/db";
 
 while (true) {
   console.log("worker waiting for job");
@@ -12,7 +13,8 @@ while (true) {
   const stream = submissions[0];
   const record = stream?.messages[0];
 
-  const { systemPrompt, code, contestId, challengeId, userId } = record.message;
+  const { systemPrompt, submissionId, code, contestId, challengeId, userId } =
+    record.message;
 
   console.log("PROCESSING:", record.id);
 
@@ -20,9 +22,15 @@ while (true) {
     await processWithAi({
       systemPrompt,
       code,
+      submissionId,
       challengeId,
       userId,
       contestId,
+    });
+
+    await db.submission.update({
+      where: { id: submissionId },
+      data: { status: "PENDING" },
     });
 
     await ackSubmission(record.id);
