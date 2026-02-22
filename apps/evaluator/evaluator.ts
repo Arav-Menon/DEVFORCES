@@ -4,12 +4,14 @@ import {
   evaluationNotification,
   pushLeaderboardEvent,
 } from "@repo/redis-stream/redis-client";
+import { db } from "@repo/db/db";
 
 export const processWithAi = async ({
   systemPrompt,
   code,
   challengeId,
   userId,
+  submissionId,
   contestId,
 }: any) => {
   console.log("request is reaching here");
@@ -56,6 +58,15 @@ export const processWithAi = async ({
       score,
       userId,
     };
+
+    await db.submission.update({
+      where: { id: submissionId },
+      data: {
+        status: "COMPLETED",
+        score: score,
+        result: payload.result,
+      },
+    });
 
     const sendNotificationToQueue = await evaluationNotification(payload);
     const sendLeaderBoardToQueue =
