@@ -61,13 +61,16 @@ model Challenge {
 }
 
 model Submission {
-  id          String    @id @default(uuid())
-  points      Int
-  submittedAt DateTime  @default(now())
-  challenge   Challenge @relation(fields: [challengeId], references: [id])
-  challengeId String
-  user        User      @relation(fields: [userId], references: [id])
-  userId      String
+  id           String           @id @default(uuid())
+  result       Json?
+  score        Int?
+  submissionId String
+  status       SubmissionStatus
+  submittedAt  DateTime         @default(now())
+  challenge    Challenge        @relation(fields: [challengeId], references: [id])
+  challengeId  String
+  user         User             @relation(fields: [userId], references: [id])
+  userId       String
 }
 
 model Leaderboard {
@@ -79,6 +82,12 @@ model Leaderboard {
   contestId String
 
   @@unique([rank, contestId])
+}
+
+enum SubmissionStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
 }
 
 enum ContestStatus {
