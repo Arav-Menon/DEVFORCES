@@ -4,9 +4,14 @@ node_modules
 .idea
 .vscode
 *.md
-**/.env
-**/.env.*
+.env
+.env.*
 dist
 build
+out
 coverage
 .turbo
+.next
+*.log
+docker-compose.yml
+Dockerfiles
