@@ -10,7 +10,6 @@ import { updateContestRouter } from "./routes/lab/contest/update.contests";
 import { deleteContestRouter } from "./routes/lab/contest/delete.contest";
 import { challengeRouter } from "./routes/lab/challenge/challenge";
 import { deleteChallengeRouter } from "./routes/lab/challenge/delete.challenge";
-import { updateChallengeRouter } from "./routes/lab/challenge/update.challenge";
 import { contestsRouter } from "./routes/lab/contests";
 import { challengesRouter } from "./routes/lab/challenges";
 import { submitRouter } from "./routes/lab/submit-challenge/submit";
@@ -36,7 +35,6 @@ app.use("/api/v1/contest/", updateContestRouter);
 app.use("/api/v1/contest/", deleteContestRouter);
 
 app.use("/api/v1/contest/", challengeRouter);
-app.use("/api/v1/contest/", updateChallengeRouter);
 app.use("/api/v1/contest/", deleteChallengeRouter);
 
 app.use("/api/v1/", contestsRouter);
@@ -44,6 +42,6 @@ app.use("/api/v1/contest/", challengesRouter);
 
 app.use("/api/v1/challenge/", submitRouter);
 
-app.get("/metrics", async (req, res) => {
+app.get("/metrics", async (_, res) => {
   await serveMetrics(res);
 });
