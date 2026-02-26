@@ -7,6 +7,8 @@ import { db } from "@repo/db/db";
 import { contestLimiter } from "@repo/common/rateLimit";
 import { contest_metrics_middleware } from "../../../middleware/metrics";
 import { contestDbQueryDurationMs } from "@repo/common/observability";
+import { client } from "@repo/redis-stream/redis-client";
+import { allContestKey } from "@repo/common/index";
 
 export const contestRouter = express.Router();
 
@@ -59,6 +61,8 @@ contestRouter.post(
       });
 
       endTime({ success: "true" });
+
+      await client.del(allContestKey);
 
       res.status(201).json({
         message: "contest has been created",
