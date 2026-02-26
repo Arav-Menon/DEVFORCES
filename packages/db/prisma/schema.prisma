@@ -26,7 +26,6 @@ enum Role {
   CREATOR
 }
 
-// contest where user can participate
 model Contest {
   id          String        @id @default(uuid())
   title       String
