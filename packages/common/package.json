@@ -6,7 +6,8 @@
   "exports": {
     "./validation": "./validation.ts",
     "./rateLimit": "./rateLimit/rateLimit.ts",
-    "./observability" : "./observability/index.ts"
+    "./observability": "./observability/index.ts",
+    "./index": "./cache-keys/index.ts"
   },
   "devDependencies": {
     "@types/bun": "latest"
