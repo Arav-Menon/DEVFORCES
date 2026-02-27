@@ -42,6 +42,17 @@ services:
       - redis
     networks:
       - devforce_network
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfiles/Dockerfile.worker
+    container_name: devforce-worker
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    depends_on:
+      - postgres
+    networks:
+      - devforce_network
 
   prometheus:
     image: prom/prometheus:latest
