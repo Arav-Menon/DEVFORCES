@@ -54,6 +54,48 @@ services:
     networks:
       - devforce_network
 
+  cron-worker:
+    build:
+      context: .
+      dockerfile: Dockerfiles/Dockerfile.cron-worker
+      container_name: devforce-cron-worker
+      depends_on:
+        - postgres
+      networks:
+        - devforce_network
+
+  realtime:
+    build:
+      context: .
+      dockerfile: Dockerfiles/Dockerfile.realtime
+      container_name: devforce-realtime
+      depends_on:
+        - postgres
+      networks:
+        - devforce_network
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfiles/Dockerfile.web
+      container_name: devforce-web
+      port: "3000:3000"
+      depends_on:
+        - postgres
+      networks:
+        - devforce_network
+
+  learderboard:
+   build:
+    context: .
+    dockerfile: Dockerfiles/Dockerfile.leaderboard
+    container_name: devforce-leaderboard
+    port: "8080:8080"
+    depends_on:
+     - redis
+    networks:
+     - devforce_network  
+
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus_container
