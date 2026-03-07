@@ -1,18 +1,44 @@
-FROM oven/bun:1.3.1-alpine AS base
+FROM oven/bun:1.3.1-alpine AS deps
 
 WORKDIR /app
 
-COPY package.json bun.lock ./
-COPY turbo.json ./
-
-COPY packages/redis-stream ./packages/redis-stream
-
-COPY apps/realtime /apps/realtime
+COPY package.json bun.lock turbo.json ./
+COPY packages/redis-stream/package.json  ./packages/redis-stream/
+COPY apps/realtime/package.json          ./apps/realtime/
 
 RUN bun install
+
+FROM oven/bun:1.3.1-alpine AS builder
+
+WORKDIR /app
+
+COPY --from=deps /app/node_modules ./node_modules
+
+COPY turbo.json package.json bun.lock ./
+COPY packages/redis-stream ./packages/redis-stream
+COPY apps/realtime         ./apps/realtime
+
+FROM oven/bun:1.3.1-alpine AS release
+
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+COPY --from=builder --chown=appuser:appgroup /app/node_modules          ./node_modules
+COPY --from=builder --chown=appuser:appgroup /app/packages/redis-stream ./packages/redis-stream
+COPY --from=builder --chown=appuser:appgroup /app/apps/realtime         ./apps/realtime
+COPY --from=builder --chown=appuser:appgroup /app/package.json          ./package.json
+COPY --from=builder --chown=appuser:appgroup /app/turbo.json            ./turbo.json
+
+USER appuser
 
 WORKDIR /app/apps/realtime
 
 EXPOSE 8080
 
-CMD ["bun", "run" ,"start:realtime"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD bun --version || exit 1
+
+CMD ["bun", "run", "start:realtime"]
