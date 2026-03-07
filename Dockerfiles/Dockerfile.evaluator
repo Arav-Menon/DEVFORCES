@@ -20,7 +20,7 @@ COPY packages/redis-stream ./packages/redis-stream
 COPY packages/db           ./packages/db
 COPY apps/evaluator        ./apps/evaluator
 
-RUN cd packages/db && bunx prisma generate
+RUN node_modules/.bin/prisma generate --schema=packages/db/prisma/schema.prisma
 
 FROM oven/bun:1.3.1-alpine AS release
 
