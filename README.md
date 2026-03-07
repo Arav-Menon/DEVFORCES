@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/Arav-Menon/DEVFORCES/main/assets/logo.png" alt="DevForce Logo" width="300" />
+  <img src="./apps/web2/public/devforce-icon.png" alt="DevForce Logo" width="300" />
 
   <h1>DEVFORCE</h1>
 
