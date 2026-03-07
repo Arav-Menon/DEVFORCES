@@ -2,7 +2,6 @@ FROM oven/bun:1.3.1-alpine AS base
 WORKDIR /app
 
 FROM base AS deps
-# Copy root package.json and lockfile
 COPY package.json bun.lock ./
 
 COPY apps/web2/package.json ./apps/web2/
