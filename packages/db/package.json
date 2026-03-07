@@ -4,9 +4,9 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "prisma:studio": "npx prisma studio",
-    "prisma:generate": "npx prisma generate",
-    "prisma:migrate": "npx prisma migrate dev"
+    "prisma:studio": "prisma studio",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev"
   },
   "exports": {
     "./db": "./index.ts"
