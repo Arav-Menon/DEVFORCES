@@ -2,7 +2,7 @@ import { WebSocketServer } from "ws";
 import { clients } from "./broadcast/wsClients";
 import { startNotificationSubscriber } from "./broadcast/subscriber";
 
-const wss = new WebSocketServer({ port: 8080 });
+const wss = new WebSocketServer({ port: 8081 });
 
 wss.on("connection", (ws: any) => {
   console.log("connect to server")
