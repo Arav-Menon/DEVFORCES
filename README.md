@@ -1,7 +1,5 @@
 <div align="center">
-  <img src="./apps/web2/public/devforce-icon.png" alt="DevForce Logo" width="300" />
-
-  <h1>DEVFORCE</h1>
+  <img src="./apps/web2/public/logo.png" alt="DevForce Logo" width="300"/>
 
   <p>The high-performance, real-time coding assessment and competitive programming platform.</p>
 
