@@ -20,6 +20,7 @@ export const contestSchema = z.object({
     message: "Start time must be in the future",
   }),
   slug: z.string(),
+  status: z.enum(["UPCOMING", "ONGOING", "ENDED"]).optional(),
 });
 
 export const challengeSchema = z.object({
