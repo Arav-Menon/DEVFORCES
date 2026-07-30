@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Clock, CalendarDays, ExternalLink } from "lucide-react";
+import { Search, Clock, CalendarDays, ExternalLink, Plus } from "lucide-react";
 import { fetchContest } from "@/utils/challenge_api/weekly-devforce-contests/api";
 
 interface Contest {
@@ -81,9 +81,7 @@ export default function ContestsPage() {
 
   const filtered = allContests
     .filter((c) => c.status === activeTab)
-    .filter((c) =>
-      c.title.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    .filter((c) => c.title.toLowerCase().includes(searchQuery.toLowerCase()));
 
   const tabLabel: Record<Tab, string> = {
     ONGOING: "Ongoing",
@@ -99,8 +97,18 @@ export default function ContestsPage() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="text-4xl font-bold mb-1">Contests</h1>
-              <p className="text-zinc-400 text-sm">Compete with developers worldwide</p>
+              <p className="text-zinc-400 text-sm">
+                Compete with developers worldwide
+              </p>
             </div>
+            <Link
+              href="/create-contests"
+              className="inline-flex items-center justify-center rounded-md bg-white px-5 py-2.5 text-sm font-semibold text-black transition-all hover:bg-zinc-200 active:scale-95 shadow-lg shadow-white/5"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Create Contest
+            </Link>
+
           </div>
 
           {/* Search */}
@@ -158,8 +166,12 @@ export default function ContestsPage() {
         ) : filtered.length === 0 ? (
           <div className="text-center py-24">
             <CalendarDays className="w-12 h-12 text-zinc-700 mx-auto mb-4" />
-            <p className="text-zinc-400 text-lg mb-1">No {tabLabel[activeTab].toLowerCase()} contests</p>
-            <p className="text-zinc-600 text-sm">Check back later or explore other tabs</p>
+            <p className="text-zinc-400 text-lg mb-1">
+              No {tabLabel[activeTab].toLowerCase()} contests
+            </p>
+            <p className="text-zinc-600 text-sm">
+              Check back later or explore other tabs
+            </p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -181,7 +193,9 @@ export default function ContestsPage() {
                       <Clock className="w-3.5 h-3.5 flex-shrink-0" />
                       <span>
                         {contest.status === "UPCOMING" ? "Starts" : "Started"}:{" "}
-                        <span className="text-zinc-300">{formatDate(contest.startTime)}</span>
+                        <span className="text-zinc-300">
+                          {formatDate(contest.startTime)}
+                        </span>
                       </span>
                     </div>
                     <span className="text-xs text-zinc-600 font-mono mt-1 block">
@@ -203,8 +217,8 @@ export default function ContestsPage() {
                         {contest.status === "ONGOING"
                           ? "Enter"
                           : contest.status === "UPCOMING"
-                          ? "View Details"
-                          : "View Results"}
+                            ? "View Details"
+                            : "View Results"}
                         <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
                       </Button>
                     </Link>
