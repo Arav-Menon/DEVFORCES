@@ -148,7 +148,7 @@ export default function SignIn() {
       <div className="text-center text-sm text-zinc-400">
         Don't have an account?{" "}
         <Link
-          href="/auth/signup"
+          href="/signup"
           className="text-zinc-200 underline hover:text-blue-400 font-semibold transition"
         >
           Sign up for free
