@@ -73,7 +73,7 @@ challengeRouter.post(
           examples: example!,
           allowedLanguages: allowedLanguages,
           maxPoints: maxPoint,
-          contestId: contestId!,
+          contestId: contestId as string,
           difficulty: difficulty,
           evaluationConfig: evaluationConfig!,
         },
