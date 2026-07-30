@@ -1,4 +1,5 @@
-FROM oven/bun:1.3.1-alpine AS deps
+FROM oven/bun:1.3.1 AS deps
+RUN apt-get update -y && apt-get install -y openssl
 
 WORKDIR /app
 
@@ -8,7 +9,8 @@ COPY apps/realtime/package.json          ./apps/realtime/
 
 RUN bun install
 
-FROM oven/bun:1.3.1-alpine AS builder
+FROM oven/bun:1.3.1 AS builder
+RUN apt-get update -y && apt-get install -y openssl
 
 WORKDIR /app
 
@@ -18,9 +20,10 @@ COPY turbo.json package.json bun.lock ./
 COPY packages/redis-stream ./packages/redis-stream
 COPY apps/realtime         ./apps/realtime
 
-FROM oven/bun:1.3.1-alpine AS release
+FROM oven/bun:1.3.1-slim AS release
+RUN apt-get update -y && apt-get install -y openssl
 
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+RUN groupadd -r appgroup && useradd -r -g appgroup appuser
 
 WORKDIR /app
 
