@@ -21,3 +21,13 @@ export const fetchContest = async () => {
   const response = await axiosInstence.get("/api/v1/contests");
   return response.data.contests;
 };
+
+export const createContest = async (data: {
+  title: string;
+  slug: string;
+  startTime: string;
+  status: string;
+}) => {
+  const response = await axiosInstence.post("/api/v1/contest/create", data);
+  return response.data;
+};
