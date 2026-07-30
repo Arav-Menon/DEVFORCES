@@ -16,6 +16,18 @@
     "dev": {
       "cache": false,
       "persistent": true
+    },
+    "prisma:generate": {
+      "cache": false,
+      "inputs": ["prisma/**"],
+      "outputs": ["node_modules/.prisma/**"]
+    },
+    "prisma:studio": {
+      "cache": false,
+      "persistent": true
+    },
+    "prisma:migrate": {
+      "cache": false
     }
   }
 }
