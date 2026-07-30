@@ -42,6 +42,6 @@ app.use("/api/v1/contest/", challengesRouter);
 
 app.use("/api/v1/challenge/", submitRouter);
 
-app.get("/metrics", async (_, res) => {
+app.get("/metrics", async (req: any, res: any) => {
   await serveMetrics(res);
 });
