@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:latest
+    image: postgres:16
     container_name: devforces-postgres_db
     ports:
       - "5432:5432"
@@ -37,6 +37,7 @@ services:
       PORT: 4000
       AUTH_TOKEN: ${AUTH_TOKEN}
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+      CLIENT_URL: http://localhost:3000
     depends_on:
       - postgres
       - redis
@@ -49,8 +50,12 @@ services:
     container_name: devforce-worker
     environment:
       DATABASE_URL: ${DATABASE_URL}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
     depends_on:
       - postgres
+      - redis
     networks:
       - devforce_network
 
@@ -59,8 +64,13 @@ services:
        context: .
        dockerfile: Dockerfiles/Dockerfile.cron-worker
     container_name: devforce-cron-worker
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
     depends_on:
         - postgres
+        - redis
     networks:
         - devforce_network
 
@@ -70,8 +80,13 @@ services:
        dockerfile: Dockerfiles/Dockerfile.realtime
     container_name: devforce-realtime
     ports: ["8081:8081"]
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
     depends_on:
         - postgres
+        - redis
     networks:
         - devforce_network
 
@@ -79,10 +94,18 @@ services:
     build:
       context: .
       dockerfile: Dockerfiles/Dockerfile.web
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:4000
     container_name: devforce-web
     ports: ["3000:3000"]
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:4000
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
     depends_on:
       - postgres
+      - api
+      - redis
     networks:
       - devforce_network
 
@@ -92,8 +115,13 @@ services:
       dockerfile: Dockerfiles/Dockerfile.leaderboard
    container_name: devforce-leaderboard
    ports: ["8080:8080"]
+   environment:
+     DATABASE_URL: ${DATABASE_URL}
+     REDIS_HOST: redis
+     REDIS_PORT: 6379
    depends_on:
      - redis
+     - postgres
    networks:
      - devforce_network  
 
