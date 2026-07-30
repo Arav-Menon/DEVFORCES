@@ -7,12 +7,18 @@ import { SubmissionList } from "@/components/dashboard/submission-list";
 import { RatingChart } from "@/components/dashboard/rating-chart";
 import { LeaderboardPreview } from "@/components/dashboard/leaderboard-preview";
 import { Button } from "@/components/ui/button";
-import { Trophy, Target, Zap, Flame, Code, BookOpen, Plus } from "lucide-react";
+import {
+  Trophy,
+  Target,
+  Zap,
+  Flame,
+  Code,
+  BookOpen,
+  Plus,
+  User,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { fetchContest } from "@/utils/challenge_api/weekly-devforce-contests/api";
-
-
-
 
 // Mock data
 const mockStats = {
@@ -22,7 +28,6 @@ const mockStats = {
   streak: 15,
   contestRating: "Top 10%",
 };
-
 
 const mockProblems = [
   {
@@ -133,7 +138,6 @@ const mockRatingData = Array.from({ length: 30 }, (_, i) => ({
   rating: 1700 + Math.sin(i / 5) * 150 + Math.cos(i / 3) * 50,
 }));
 
-
 const mockLeaderboardUsers = [
   { rank: 1, username: "codemaster", rating: 2847, isCurrentUser: false },
   { rank: 2, username: "algorithm_pro", rating: 2756, isCurrentUser: false },
@@ -177,8 +181,8 @@ export default function DashboardPage() {
             <div className="flex gap-3">
               <Link href="/profile/sd">
                 <Button className="bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700">
-                  <Code className="w-4 h-4 mr-2" />
-                  Solve Problems
+                  <User className=" h-4 mr-2" />
+                  Profile
                 </Button>
               </Link>
               <Link href="/contests">
