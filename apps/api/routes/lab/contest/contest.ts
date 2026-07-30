@@ -18,9 +18,10 @@ contestRouter.post(
   "/create",
   middleware,
   contestLimiter,
-  authorizeRole(["ADMIN", "CREATOR"]),
+  // authorizeRole(["ADMIN", "CREATOR"]),
   async (req: Request, res: Response) => {
-    const userId = req.id;
+    //@ts-ignore
+    const userId = req.user.id;
     const result = contestSchema.safeParse(req.body);
 
     if (!result.success) {
