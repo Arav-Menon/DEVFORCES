@@ -17,12 +17,12 @@ deleteChallengeRouter.delete(
     try {
       const findContest = await db.contest.findUnique({
         where: {
-          id: contestId,
+          id: contestId as string,
         },
       });
 
       const findChallenge = await db.challenge.findUnique({
-        where: { id: challengeId },
+        where: { id: challengeId as string },
       });
 
       if (!findContest || !findChallenge) {
@@ -32,7 +32,7 @@ deleteChallengeRouter.delete(
       }
 
       const removeChallenge = await db.challenge.delete({
-        while: { id: challengeId },
+        where: { id: challengeId as string },
       });
 
       res.status(204).json({
