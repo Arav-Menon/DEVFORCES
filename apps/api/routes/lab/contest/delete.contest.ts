@@ -19,12 +19,12 @@ deleteContestRouter.delete(
     try {
       const findContest = await db.contest.findUnique({
         where: {
-          id: contestId,
+          id: contestId as string,
         },
       });
 
       const findChallenge = await db.challenge.findUnique({
-        where: { id: challengeId },
+        where: { id: challengeId as string },
       });
 
       if (!findContest || !findChallenge) {
@@ -34,26 +34,13 @@ deleteContestRouter.delete(
       }
 
       const removeChallengeContest = await db.$transaction(
-        async (tx: {
-          challenge: {
-            delete: (arg0: {
-              where: { id: string | string[] };
-              select: { id: string | string[] };
-            }) => any;
-          };
-          contest: {
-            delete: (arg0: { while: { id: string | string[] } }) => any;
-          };
-        }) => {
+        async (tx) => {
           await tx.challenge.delete({
-            where: { id: challengeId },
-            select: {
-              id: contestId,
-            },
+            where: { id: challengeId as string },
           });
 
           await tx.contest.delete({
-            while: { id: contestId },
+            where: { id: contestId as string },
           });
         },
       );
