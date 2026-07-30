@@ -4,9 +4,13 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "prisma:studio": "prisma studio",
+    "prisma:studio": " bunx prisma studio",
     "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev"
+    "prisma:migrate": "prisma migrate dev",
+    "db:seed": "bun seed.ts"
+  },
+  "prisma": {
+    "seed": "bun seed.ts"
   },
   "exports": {
     "./db": "./index.ts"
@@ -18,7 +22,7 @@
     "typescript": "^5"
   },
   "dependencies": {
-    "@prisma/adapter-pg": "^7.1.0",
+      "@prisma/adapter-pg": "^7.1.0",
     "@prisma/adapter-pg-worker": "^6.9.0",
     "@prisma/client": "5.15.0",
     "dotenv": "^17.2.3",
