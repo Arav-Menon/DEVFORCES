@@ -3,7 +3,10 @@ import { broadcast } from "./broadcast";
 import { client } from "@repo/redis-stream/redis-client";
 import { v4 as uuidV4 } from "uuid";
 
-const subClient = new Redis();
+const subClient = new Redis({
+  host: process.env.REDIS_HOST || 'localhost',
+  port: parseInt(process.env.REDIS_PORT || '6379')
+});
 const evaluationId = uuidV4();
 
 export const startNotificationSubscriber = () => {
