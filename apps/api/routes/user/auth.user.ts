@@ -49,7 +49,7 @@ authRoute.post(
           });
 
         if (existUser.isBlocked === true) {
-          res.status(403).json(`${existUser.username} is blocked`);
+          return res.status(403).json(`${existUser.username} is blocked`);
         }
 
         const token = jwt.sign(
