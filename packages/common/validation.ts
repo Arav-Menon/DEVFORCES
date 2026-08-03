@@ -15,29 +15,23 @@ export const userSchema = z.object({
 });
 
 export const contestSchema = z.object({
-  title: z.string().trim().min(5).max(100),
-  startTime: z.coerce.date().refine((d) => d.getTime() > Date.now(), {
-    message: "Start time must be in the future",
-  }),
+  title: z.string().trim().min(3).max(100),
+  startTime: z.coerce.date().optional(),
   slug: z.string(),
   status: z.enum(["UPCOMING", "ONGOING", "ENDED"]).optional(),
 });
 
 export const challengeSchema = z.object({
-  title: z.string().trim().min(5).max(100),
+  title: z.string().trim().min(3).max(100),
   slug: z.string(),
   description: z.string(),
   requirements: z.string(),
-  constraints: z.string(),
+  constraints: z.string().optional().default(""),
   example: z.json(),
   allowedLanguages: z.array(z.string()),
   maxPoint: z.number().min(10).max(100),
-  startAt: z.coerce.date().refine((d) => d.getTime() > Date.now(), {
-    message: "Start time must be in the future",
-  }),
-  endAt: z.coerce.date().refine((d) => d.getTime() < Date.now(), {
-    message: "end time must be in the future",
-  }),
+  startAt: z.coerce.date(),
+  endAt: z.coerce.date(),
   evaluationConfig: z.json(),
   difficulty: z.enum(["EASY", "MEDIUM", "HARD"]),
 });
