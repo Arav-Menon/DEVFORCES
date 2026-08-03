@@ -11,11 +11,15 @@ export const middleware = (req: any, res: Response, next: NextFunction) => {
 
   const token = authHeader.split(" ")[1];
 
-  const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
 
-  req.user = {
-    id: decoded.id,
-  } as any;
+    req.user = {
+      id: decoded.id,
+    } as any;
 
-  next();
+    next();
+  } catch {
+    return res.status(401).json({ message: "Invalid or expired token" });
+  }
 };
