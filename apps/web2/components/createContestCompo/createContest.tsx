@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AlertCircle, CheckCircle2, Loader2, ArrowLeft } from "lucide-react";
-import { createContest } from "@/utils/challenge_api/weekly-devforce-contests/api";
+import { createContest as createContestApi } from "@/utils/admin_api/api";
 
 export default function CreateContestPage() {
   const router = useRouter();
@@ -30,19 +30,35 @@ export default function CreateContestPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
     setSuccess(false);
 
+    if (!formData.title.trim() || !formData.slug.trim()) {
+      setError("Please fill in title and slug");
+      return;
+    }
+
+    if (!formData.startTime) {
+      setError("Please select a start time");
+      return;
+    }
+
+    const startDate = new Date(formData.startTime);
+    if (isNaN(startDate.getTime())) {
+      setError("Invalid start time");
+      return;
+    }
+
+    setLoading(true);
+
     try {
-      // Ensure startTime is in ISO format
-      const isoStartTime = new Date(formData.startTime).toISOString();
+      const isoStartTime = startDate.toISOString();
       const payload = {
         ...formData,
         startTime: isoStartTime,
       };
 
-      await createContest(payload);
+      await createContestApi(payload);
       setSuccess(true);
       setTimeout(() => {
         router.push("/contests");
@@ -128,9 +144,12 @@ export default function CreateContestPage() {
                 <Input
                   type="datetime-local"
                   name="startTime"
-                  required
                   value={formData.startTime}
                   onChange={handleChange}
+                  onInput={(e) => {
+                    const target = e.target as HTMLInputElement;
+                    setFormData((prev) => ({ ...prev, startTime: target.value }));
+                  }}
                   className="h-12 bg-zinc-950/50 border-zinc-800 text-white focus:ring-1 focus:ring-white transition-all rounded-xl [color-scheme:dark]"
                 />
               </div>
