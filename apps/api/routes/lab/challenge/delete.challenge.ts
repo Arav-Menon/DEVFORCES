@@ -12,38 +12,37 @@ deleteChallengeRouter.delete(
   async (req, res) => {
     const { contestId, challengeId } = req.params;
 
-    if (!contestId || !challengeId) return;
+    if (!contestId || !challengeId) {
+      return res.status(400).json({
+        message: "Contest ID and Challenge ID are required",
+      });
+    }
 
     try {
-      const findContest = await db.contest.findUnique({
+      const findChallenge = await db.challenge.findFirst({
         where: {
-          id: contestId as string,
+          id: challengeId as string,
+          contestId: contestId as string,
         },
       });
 
-      const findChallenge = await db.challenge.findUnique({
-        where: { id: challengeId as string },
-      });
-
-      if (!findContest || !findChallenge) {
-        res.status(404).json({
-          message: "contest or challenge not found",
+      if (!findChallenge) {
+        return res.status(404).json({
+          message: "Challenge not found",
         });
       }
 
-      const removeChallenge = await db.challenge.delete({
+      await db.challenge.delete({
         where: { id: challengeId as string },
       });
 
-      res.status(204).json({
-        challenge: removeChallenge.title,
-        message: `challenge deleted succesfully `,
+      res.status(200).json({
+        message: "Challenge deleted successfully",
       });
     } catch (err) {
-      console.log(err);
-
-      res.status(500).json({
-        err: err,
+      console.error(err);
+      return res.status(500).json({
+        message: "Internal server error",
       });
     }
   },
