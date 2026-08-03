@@ -1,216 +1,176 @@
 "use client";
 
-import Link from "next/link";
-import { ContestWidget } from "@/components/dashboard/contest-widget";
-import { ProblemTablePreview } from "@/components/dashboard/problem-table-preview";
-import { SubmissionList } from "@/components/dashboard/submission-list";
-import { RatingChart } from "@/components/dashboard/rating-chart";
-import { LeaderboardPreview } from "@/components/dashboard/leaderboard-preview";
-import { Button } from "@/components/ui/button";
-import {
-  Trophy,
-  Target,
-  Zap,
-  Flame,
-  Code,
-  BookOpen,
-  Plus,
-  User,
-} from "lucide-react";
 import { useEffect, useState } from "react";
-import { fetchContest } from "@/utils/challenge_api/weekly-devforce-contests/api";
-
-// Mock data
-const mockStats = {
-  rating: 1850,
-  rank: 1234,
-  problemsSolved: 342,
-  streak: 15,
-  contestRating: "Top 10%",
-};
-
-const mockProblems = [
-  {
-    id: "1",
-    title: "Two Sum",
-    difficulty: "Easy" as const,
-    acceptance: 47.3,
-    solved: true,
-  },
-  {
-    id: "2",
-    title: "Median of Two Sorted Arrays",
-    difficulty: "Hard" as const,
-    acceptance: 31.2,
-    solved: false,
-  },
-  {
-    id: "3",
-    title: "Longest Substring Without Repeating Characters",
-    difficulty: "Medium" as const,
-    acceptance: 34.8,
-    solved: true,
-  },
-  {
-    id: "4",
-    title: "Binary Tree Level Order Traversal",
-    difficulty: "Medium" as const,
-    acceptance: 52.1,
-    solved: false,
-  },
-  {
-    id: "5",
-    title: "Regular Expression Matching",
-    difficulty: "Hard" as const,
-    acceptance: 27.6,
-    solved: false,
-  },
-  {
-    id: "6",
-    title: "Container With Most Water",
-    difficulty: "Medium" as const,
-    acceptance: 51.3,
-    solved: true,
-  },
-];
-
-const mockSubmissions = [
-  {
-    id: "1",
-    problemTitle: "Two Sum",
-    status: "Accepted" as const,
-    language: "Python",
-    time: "5 minutes ago",
-  },
-  {
-    id: "2",
-    problemTitle: "Container With Most Water",
-    status: "Accepted" as const,
-    language: "JavaScript",
-    time: "1 hour ago",
-  },
-  {
-    id: "3",
-    problemTitle: "Longest Substring Without Repeating Characters",
-    status: "Wrong Answer" as const,
-    language: "Python",
-    time: "2 hours ago",
-  },
-  {
-    id: "4",
-    problemTitle: "LRU Cache",
-    status: "Accepted" as const,
-    language: "C++",
-    time: "3 hours ago",
-  },
-  {
-    id: "5",
-    problemTitle: "Binary Tree Level Order Traversal",
-    status: "Time Limit Exceeded" as const,
-    language: "Python",
-    time: "5 hours ago",
-  },
-  {
-    id: "6",
-    problemTitle: "Word Ladder",
-    status: "Runtime Error" as const,
-    language: "JavaScript",
-    time: "1 day ago",
-  },
-  {
-    id: "7",
-    problemTitle: "Reverse Nodes in k-Group",
-    status: "Accepted" as const,
-    language: "Python",
-    time: "2 days ago",
-  },
-  {
-    id: "8",
-    problemTitle: "Median of Two Sorted Arrays",
-    status: "Wrong Answer" as const,
-    language: "Java",
-    time: "3 days ago",
-  },
-];
-
-const mockRatingData = Array.from({ length: 30 }, (_, i) => ({
-  day: i + 1,
-  rating: 1700 + Math.sin(i / 5) * 150 + Math.cos(i / 3) * 50,
-}));
-
-const mockLeaderboardUsers = [
-  { rank: 1, username: "codemaster", rating: 2847, isCurrentUser: false },
-  { rank: 2, username: "algorithm_pro", rating: 2756, isCurrentUser: false },
-  { rank: 3, username: "competitive_dev", rating: 2734, isCurrentUser: false },
-  { rank: 4, username: "you", rating: 1850, isCurrentUser: true },
-  { rank: 5, username: "data_structures", rating: 2412, isCurrentUser: false },
-];
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { PersonalStats } from "@/components/dashboard/personal-stats";
+import { ContestWidget } from "@/components/dashboard/contest-widget";
+import { PerformanceAnalytics } from "@/components/dashboard/performance-analytics";
+import { ProblemTablePreview } from "@/components/dashboard/problem-table-preview";
+import { SkillAnalytics } from "@/components/dashboard/skill-analytics";
+import { LeaderboardPreview } from "@/components/dashboard/leaderboard-preview";
+import { SubmissionList } from "@/components/dashboard/submission-list";
+import { UpcomingContests } from "@/components/dashboard/upcoming-contests";
+import { QuickActions } from "@/components/dashboard/quick-actions";
+import { Achievements } from "@/components/dashboard/achievements";
+import { SystemStatus } from "@/components/dashboard/system-status";
+import { Button } from "@/components/ui/button";
+import { Trophy, User, LogOut, Loader2 } from "lucide-react";
+import {
+  fetchContests as fetchAllContests,
+  fetchUserStats,
+  fetchUserSubmissions,
+  fetchUserRatingHistory,
+  fetchLeaderboard,
+  fetchUpcomingContests,
+  type UserStats,
+  type UserSubmission,
+  type RatingHistory,
+  type LeaderboardEntry,
+  type UpcomingContest,
+  type Contest,
+} from "@/utils/admin_api/api";
 
 export default function DashboardPage() {
-  const [contests, setContests] = useState<any[]>([]);
+  const router = useRouter();
+  const [userId, setUserId] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Data states
+  const [contests, setContests] = useState<Contest[]>([]);
+  const [userStats, setUserStats] = useState<UserStats | null>(null);
+  const [submissions, setSubmissions] = useState<UserSubmission[]>([]);
+  const [ratingHistory, setRatingHistory] = useState<RatingHistory[]>([]);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [upcomingContests, setUpcomingContests] = useState<UpcomingContest[]>([]);
+
   useEffect(() => {
-    const fetchWeeklyContests = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/");
+      return;
+    }
+
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      setUserId(payload.id);
+      setUserRole(payload.role);
+    } catch {
+      router.push("/");
+      return;
+    }
+  }, [router]);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const fetchAllData = async () => {
       try {
-        const response = await fetchContest();
-        setContests(response);
+        const [contestsData, statsData, submissionsData, ratingData, leaderboardData, upcomingData] =
+          await Promise.allSettled([
+            fetchAllContests(),
+            fetchUserStats(userId),
+            fetchUserSubmissions(userId, 10),
+            fetchUserRatingHistory(userId),
+            fetchLeaderboard(5),
+            fetchUpcomingContests(3),
+          ]);
+
+        if (contestsData.status === "fulfilled") setContests(contestsData.value);
+        if (statsData.status === "fulfilled") setUserStats(statsData.value);
+        if (submissionsData.status === "fulfilled") setSubmissions(submissionsData.value);
+        if (ratingData.status === "fulfilled") setRatingHistory(ratingData.value);
+        if (leaderboardData.status === "fulfilled") setLeaderboard(leaderboardData.value);
+        if (upcomingData.status === "fulfilled") setUpcomingContests(upcomingData.value);
       } catch (err) {
-        console.error(err);
+        console.error("Failed to fetch dashboard data:", err);
       } finally {
         setLoading(false);
       }
     };
-    fetchWeeklyContests();
-  }, []);
 
-  const latestContest = contests && contests.length > 0 ? contests[0] : null;
+    fetchAllData();
+  }, [userId]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    router.push("/");
+  };
+
+  const latestContest = contests.length > 0 ? contests[0] : null;
+
+  if (loading) {
+    return (
+      <main className="bg-black text-white min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+          <p className="text-zinc-400">Loading dashboard...</p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="bg-black text-white min-h-screen">
-      {/* Header */}
+      {/* Sticky Header */}
       <div className="border-b border-zinc-800 bg-gradient-to-b from-zinc-900/50 to-black sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-6 py-6">
+        <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <img src="logo.png" className="h-16" alt="" />
-              <p className="text-zinc-400 ml-">
-                Welcome back! Here's your coding journey at a glance.
-              </p>
+              <img src="logo.png" className="h-12" alt="DevForce" />
             </div>
             <div className="flex gap-3">
               <Link href="/profile/sd">
                 <Button className="bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700">
-                  <User className=" h-4 mr-2" />
+                  <User className="w-4 h-4 mr-2" />
                   Profile
                 </Button>
               </Link>
+              {(userRole === "ADMIN" || userRole === "CREATOR") && (
+                <Link href="/admin">
+                  <Button className="bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700">
+                    <Trophy className="w-4 h-4 mr-2" />
+                    Manage Contests
+                  </Button>
+                </Link>
+              )}
               <Link href="/contests">
                 <Button className="bg-white/90 hover:bg-white/80 text-black">
                   <Trophy className="w-4 h-4 mr-2" />
                   Join Contest
                 </Button>
               </Link>
+              <Button
+                onClick={handleLogout}
+                className="bg-zinc-800 hover:bg-red-900/50 text-zinc-400 hover:text-red-400 border border-zinc-700 hover:border-red-800"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
+              </Button>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+        {/* Personal Stats */}
+        <PersonalStats userStats={userStats} />
+
+        {/* Main Grid: 2-col main + 1-col sidebar */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Column — 2/3 width */}
           <div className="lg:col-span-2 space-y-8">
-            {loading ? (
-              <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-8 animate-pulse">
-                <div className="h-8 w-48 bg-zinc-800 rounded mb-4"></div>
-                <div className="h-4 w-64 bg-zinc-800 rounded mb-6"></div>
-                <div className="h-10 w-full bg-zinc-800 rounded"></div>
-              </div>
-            ) : latestContest ? (
+            {/* Active Contest */}
+            {latestContest ? (
               <ContestWidget
                 title={latestContest.title}
                 slug={latestContest.slug}
-                startTime={latestContest.startTime}
+                startTime={latestContest.startTime || new Date().toISOString()}
                 status={latestContest.status}
+                participants={latestContest._count?.challenges || 0}
+                challenges={latestContest._count?.challenges || 0}
               />
             ) : (
               <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-8 text-center text-zinc-500">
@@ -218,25 +178,41 @@ export default function DashboardPage() {
               </div>
             )}
 
-            <ProblemTablePreview
-              problems={mockProblems}
-              title="Recommended Problems"
-            />
+            {/* Performance Analytics */}
+            <PerformanceAnalytics ratingHistory={ratingHistory} />
 
-            <SubmissionList submissions={mockSubmissions} />
+            {/* Recommended Problems */}
+            <ProblemTablePreview />
+
+            {/* Recent Activity */}
+            <SubmissionList submissions={submissions} />
+
+            {/* Quick Actions */}
+            <QuickActions />
           </div>
 
+          {/* Right Column — 1/3 width */}
           <div className="space-y-8">
-            <RatingChart
-              username="you"
-              currentRating={mockStats.rating}
-              data={mockRatingData}
+            {/* Skill Analytics */}
+            <SkillAnalytics />
+
+            {/* Leaderboard */}
+            <LeaderboardPreview
+              users={leaderboard.map((entry) => ({
+                ...entry,
+                isCurrentUser: entry.username === userStats?.username,
+              }))}
+              currentUserRank={userStats?.rank}
             />
 
-            <LeaderboardPreview
-              users={mockLeaderboardUsers}
-              currentUserRank={mockStats.rank}
-            />
+            {/* Upcoming Contests */}
+            <UpcomingContests contests={upcomingContests} />
+
+            {/* Achievements */}
+            <Achievements userStats={userStats} />
+
+            {/* System Status */}
+            <SystemStatus />
           </div>
         </div>
       </div>
