@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Clock, Award, ChevronRight, Code2, BookOpen, AlertCircle, Star } from "lucide-react";
 import { useEffect, useState } from "react";
-import { fetchChallenges } from "@/utils/challenge_api/challenges_api/api";
+import { fetchChallenges as fetchChallengesApi } from "@/utils/admin_api/api";
 
 interface EvaluationConfig {
   scoring?: Record<string, number>;
@@ -72,8 +72,8 @@ export default function ContestDetailPage({ contestId }: { contestId: string }) 
     if (!contestId) return;
     const load = async () => {
       try {
-        const data = await fetchChallenges(contestId);
-        setChallenges(data);
+        const data = await fetchChallengesApi(contestId);
+        setChallenges(data ?? []);
       } catch (err: any) {
         setError("Failed to load challenges.");
         console.error(err);
