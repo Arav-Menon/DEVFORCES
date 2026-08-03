@@ -14,14 +14,91 @@ export const contestRouter = express.Router();
 
 contestRouter.use(contest_metrics_middleware);
 
+contestRouter.get(
+  "/:contestId/stats",
+  middleware,
+  async (req: Request, res: Response) => {
+    const contestId = req.params.contestId as string;
+
+    try {
+      const contest = await db.contest.findUnique({
+        where: { id: contestId },
+      });
+
+      if (!contest) {
+        return res.status(404).json({ message: "Contest not found" });
+      }
+
+      const totalChallenges = await db.challenge.count({
+        where: { contestId },
+      });
+
+      const totalSubmissions = await db.submission.count({
+        where: { challenge: { contestId } },
+      });
+
+      const participants = await db.submission.findMany({
+        where: { challenge: { contestId } },
+        distinct: ["userId"],
+        select: { userId: true },
+      });
+
+      res.status(200).json({
+        totalChallenges,
+        totalSubmissions,
+        totalParticipants: participants.length,
+      });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  },
+);
+
+contestRouter.get(
+  "/:contestId",
+  async (req: Request, res: Response) => {
+    const contestId = req.params.contestId as string;
+
+    try {
+      const contest = await db.contest.findUnique({
+        where: { id: contestId },
+        include: {
+          challenges: true,
+          createdBy: {
+            select: {
+              id: true,
+              username: true,
+            },
+          },
+        },
+      });
+
+      if (!contest) {
+        return res.status(404).json({
+          message: "Contest not found",
+        });
+      }
+
+      res.status(200).json({
+        contest,
+      });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({
+        message: "Internal server error",
+      });
+    }
+  },
+);
+
 contestRouter.post(
   "/create",
   middleware,
   contestLimiter,
   // authorizeRole(["ADMIN", "CREATOR"]),
   async (req: Request, res: Response) => {
-    //@ts-ignore
-    const userId = req.user.id;
+    const userId = req.user?.id;
     const result = contestSchema.safeParse(req.body);
 
     if (!result.success) {
@@ -55,7 +132,7 @@ contestRouter.post(
         data: {
           title: title,
           slug: slug,
-          startTime: startTime,
+          startTime: startTime || new Date(),
           status: "UPCOMING",
           createdById: userId!,
         },
