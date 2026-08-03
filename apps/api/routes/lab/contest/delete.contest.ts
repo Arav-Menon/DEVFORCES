@@ -8,54 +8,53 @@ import { allContestKey } from "@repo/common/index";
 export const deleteContestRouter = express.Router();
 
 deleteContestRouter.delete(
-  "/:contestId/challenge/:challengeId",
+  "/:contestId",
   middleware,
   authorizeRole(["ADMIN", "CREATOR"]),
   async (req, res) => {
-    const { contestId, challengeId } = req.params;
+    const { contestId } = req.params;
 
-    if (!contestId || !challengeId) return;
+    if (!contestId) {
+      return res.status(400).json({
+        message: "Contest ID is required",
+      });
+    }
 
     try {
       const findContest = await db.contest.findUnique({
         where: {
           id: contestId as string,
         },
+        include: {
+          challenges: true,
+        },
       });
 
-      const findChallenge = await db.challenge.findUnique({
-        where: { id: challengeId as string },
-      });
-
-      if (!findContest || !findChallenge) {
-        res.status(404).json({
-          message: "contest or challenge not found",
+      if (!findContest) {
+        return res.status(404).json({
+          message: "Contest not found",
         });
       }
 
-      const removeChallengeContest = await db.$transaction(
-        async (tx) => {
-          await tx.challenge.delete({
-            where: { id: challengeId as string },
-          });
+      await db.$transaction(async (tx) => {
+        await tx.challenge.deleteMany({
+          where: { contestId: contestId as string },
+        });
 
-          await tx.contest.delete({
-            where: { id: contestId as string },
-          });
-        },
-      );
+        await tx.contest.delete({
+          where: { id: contestId as string },
+        });
+      });
 
       await client.del(allContestKey);
 
-      res.status(204).json({
-        removeChallengeContest,
-        message: `contest deleted succesfully `,
+      res.status(200).json({
+        message: "Contest deleted successfully",
       });
     } catch (err) {
-      console.log(err);
-
-      res.status(500).json({
-        err: err,
+      console.error(err);
+      return res.status(500).json({
+        message: "Internal server error",
       });
     }
   },
