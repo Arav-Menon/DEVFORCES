@@ -15,9 +15,12 @@ challengesRouter.get("/:contestId/challenges", middleware, async (req, res) => {
     try {
       const cacheData = await client.get(contestChallengeKey(contestId));
       if (cacheData) {
-        return res.status(200).json({
-          challenge: JSON.parse(cacheData),
-        });
+        const parsed = JSON.parse(cacheData);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return res.status(200).json({
+            challenges: parsed,
+          });
+        }
       }
     } catch (redisError) {
       console.error(`Redis cache GET error  ${redisError}`);
@@ -46,17 +49,17 @@ challengesRouter.get("/:contestId/challenges", middleware, async (req, res) => {
       },
     });
 
-    try {
-      await client.setEx(contestChallengeKey(contestId), 300, JSON.stringify(challenges));
-    } catch (redisError) {
-      console.error(`Redis cache SET error ${redisError}`);
-    }
-
     if (challenges.length == 0) {
       endTime({ success: "true" });
       return res.status(404).json({
         message: `Challenges in this contest ${findContest.title} not found`,
       });
+    }
+
+    try {
+      await client.setEx(contestChallengeKey(contestId), 300, JSON.stringify(challenges));
+    } catch (redisError) {
+      console.error(`Redis cache SET error ${redisError}`);
     }
 
     endTime({ success: "true" });
