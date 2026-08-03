@@ -5,19 +5,20 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Clock, CalendarDays, ExternalLink, Plus } from "lucide-react";
-import { fetchContest } from "@/utils/challenge_api/weekly-devforce-contests/api";
+import { fetchContests as fetchAllContests } from "@/utils/admin_api/api";
 
 interface Contest {
   id: string;
   title: string;
   slug: string;
-  startTime: string;
+  startTime: string | null;
   status: "ONGOING" | "UPCOMING" | "ENDED";
 }
 
 type Tab = "ONGOING" | "UPCOMING" | "ENDED";
 
-function formatDate(dateStr: string) {
+function formatDate(dateStr: string | null) {
+  if (!dateStr) return "Not scheduled";
   return new Date(dateStr).toLocaleString("en-US", {
     year: "numeric",
     month: "short",
@@ -66,7 +67,7 @@ export default function ContestsPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const data = await fetchContest();
+        const data = await fetchAllContests();
         setAllContests(data);
       } catch (err) {
         console.error(err);
