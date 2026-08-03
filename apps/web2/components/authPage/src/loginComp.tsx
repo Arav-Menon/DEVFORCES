@@ -34,7 +34,7 @@ export default function SignIn() {
     setIsLoading(true);
     const token = await signin(email, password);
     console.log(token);
-    localStorage.setItem("token", `Bearer ${token}`);
+    localStorage.setItem("token", token);
     router.push("/dashboard");
     setIsLoading(false);
   };
