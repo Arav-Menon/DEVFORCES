@@ -1,94 +1,101 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { CountdownTimer } from "@/components/dashboard/countdown-timer";
 import { Button } from "@/components/ui/button";
-import { Clock, Trophy, ExternalLink } from "lucide-react";
+import { Users, Code, ExternalLink } from "lucide-react";
 
 interface ContestWidgetProps {
   title: string;
   slug: string;
   startTime: string;
   status: "UPCOMING" | "ONGOING" | "ENDED";
+  participants?: number;
+  challenges?: number;
 }
 
+const statusConfig = {
+  ONGOING: {
+    label: "Live Now",
+    dot: "bg-green-500 animate-pulse",
+    badge: "bg-green-500/10 text-green-400 border-green-500/30",
+    border: "border-green-500/30",
+  },
+  UPCOMING: {
+    label: "Upcoming",
+    dot: "bg-yellow-500",
+    badge: "bg-yellow-500/10 text-yellow-400 border-yellow-500/30",
+    border: "border-zinc-800",
+  },
+  ENDED: {
+    label: "Ended",
+    dot: "bg-zinc-500",
+    badge: "bg-zinc-500/10 text-zinc-400 border-zinc-500/30",
+    border: "border-zinc-800",
+  },
+};
+
 function formatDate(dateStr: string) {
-  const date = new Date(dateStr);
-  return date.toLocaleString("en-US", {
-    year: "numeric",
-    month: "long",
+  return new Date(dateStr).toLocaleDateString("en-US", {
+    month: "short",
     day: "numeric",
+    year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-    timeZoneName: "short",
   });
 }
 
-function getStatusConfig(status: ContestWidgetProps["status"]) {
-  switch (status) {
-    case "ONGOING":
-      return {
-        label: "Live Now",
-        color: "text-green-400",
-        bg: "bg-green-500/10 border-green-500/30",
-        dot: "bg-green-400 animate-pulse",
-      };
-    case "UPCOMING":
-      return {
-        label: "Upcoming",
-        color: "text-yellow-400",
-        bg: "bg-yellow-500/10 border-yellow-500/30",
-        dot: "bg-yellow-400",
-      };
-    case "ENDED":
-      return {
-        label: "Ended",
-        color: "text-zinc-400",
-        bg: "bg-zinc-500/10 border-zinc-500/30",
-        dot: "bg-zinc-400",
-      };
-  }
-}
-
-export function ContestWidget({ title, slug, startTime, status }: ContestWidgetProps) {
-  const statusConfig = getStatusConfig(status);
+export function ContestWidget({ title, slug, startTime, status, participants = 0, challenges = 0 }: ContestWidgetProps) {
+  const config = statusConfig[status];
 
   return (
-    <div className="bg-gradient-to-br from-zinc-900 to-zinc-950 border border-zinc-800 rounded-lg p-8 transition hover:border-zinc-700">
-      {/* Header */}
-      <div className="flex items-start justify-between mb-5">
-        <div className="flex-1 min-w-0 mr-4">
-          <h3 className="text-2xl font-bold text-white truncate">{title}</h3>
-          <span className="text-zinc-500 text-sm font-mono">/{slug}</span>
+    <div className={`bg-gradient-to-br from-zinc-900 to-zinc-950 border ${config.border} rounded-lg overflow-hidden`}>
+      <div className="p-6 border-b border-zinc-800">
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <h3 className="text-lg font-bold text-white mb-1">{title}</h3>
+            <p className="text-sm text-zinc-500">/{slug}</p>
+          </div>
+          <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border ${config.badge}`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
+            {config.label}
+          </span>
         </div>
-        <Trophy className="w-6 h-6 text-yellow-500 flex-shrink-0 mt-1" />
-      </div>
 
-      {/* Status badge */}
-      <div className="mb-5">
-        <span
-          className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-semibold ${statusConfig.bg} ${statusConfig.color}`}
-        >
-          <span className={`w-1.5 h-1.5 rounded-full ${statusConfig.dot}`} />
-          {statusConfig.label}
-        </span>
-      </div>
+        <div className="flex items-center gap-2 text-sm text-zinc-400 mb-4">
+          <span>Starts {formatDate(startTime)}</span>
+        </div>
 
-      {/* Info row */}
-      <div className="flex items-center gap-3 text-zinc-400 mb-6">
-        <Clock className="w-4 h-4 text-zinc-200 flex-shrink-0" />
-        <span className="text-sm">
-          {status === "UPCOMING" ? "Starts" : "Started"}:{" "}
-          <span className="text-white font-semibold">{formatDate(startTime)}</span>
-        </span>
-      </div>
+        {status === "UPCOMING" && (
+          <div className="mb-4">
+            <p className="text-xs text-zinc-500 mb-2">Starts in</p>
+            <CountdownTimer targetDate={startTime} />
+          </div>
+        )}
 
-      {/* CTA */}
-      <Link href={`/contests/${slug}`}>
-        <Button className="w-full bg-white/90 hover:bg-white/80 text-zinc-900 font-semibold">
-          {status === "ONGOING" ? "Enter Contest" : status === "UPCOMING" ? "View Details" : "See Results"}
-          <ExternalLink className="w-4 h-4 ml-2" />
-        </Button>
-      </Link>
+        <div className="flex gap-4 text-sm text-zinc-400 mb-4">
+          <div className="flex items-center gap-1.5">
+            <Users className="w-4 h-4" />
+            <span>{participants} participants</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Code className="w-4 h-4" />
+            <span>{challenges} challenges</span>
+          </div>
+        </div>
+
+        <Link href={`/contests/${slug}`}>
+          <Button className={`w-full ${
+            status === "ONGOING"
+              ? "bg-green-600 hover:bg-green-700 text-white"
+              : "bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700"
+          }`}>
+            {status === "ONGOING" ? "Enter Contest" : status === "UPCOMING" ? "View Details" : "See Results"}
+            <ExternalLink className="w-4 h-4 ml-2" />
+          </Button>
+        </Link>
+      </div>
     </div>
   );
 }
